@@ -2,18 +2,17 @@ package com.schloesser.masterthesis.data.base
 
 import com.itkacher.okhttpprofiler.OkHttpProfilerInterceptor
 import com.schloesser.masterthesis.BuildConfig
-import com.schloesser.masterthesis.data.AuthApi
+import com.schloesser.masterthesis.data.UserApi
 import com.schloesser.masterthesis.data.EmotionRecordApi
 import com.squareup.moshi.Moshi
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.util.concurrent.TimeUnit
 
-class ApiFactory {
+object ApiFactory {
 
-    companion object {
-        var BASE_URL = "http://192.168.178.41:5000/"
-    }
+    private var BASE_URL = "http://192.168.178.41:5000/"
 
     private val moshi: Moshi by lazy {
         Moshi.Builder().build()
@@ -21,6 +20,10 @@ class ApiFactory {
 
     private val okHttpClient: OkHttpClient by lazy {
         val builder = OkHttpClient.Builder()
+
+        builder.connectTimeout(2, TimeUnit.SECONDS)
+        builder.callTimeout(20, TimeUnit.SECONDS)
+        builder.readTimeout(20, TimeUnit.SECONDS)
 
         if (BuildConfig.DEBUG) {
             builder.addInterceptor(OkHttpProfilerInterceptor())
@@ -37,8 +40,8 @@ class ApiFactory {
             .build()
     }
 
-    val authApi: AuthApi by lazy {
-        retrofit.create(AuthApi::class.java)
+    val userApi: UserApi by lazy {
+        retrofit.create(UserApi::class.java)
     }
 
     val emotionRecordApi: EmotionRecordApi by lazy {

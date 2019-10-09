@@ -3,47 +3,90 @@ package com.schloesser.masterthesis
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
+import android.view.LayoutInflater
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.FileProvider
+import com.github.dhaval2404.imagepicker.ImagePicker
 import com.schloesser.masterthesis.data.base.ApiFactory
+import com.schloesser.masterthesis.data.repository.SessionRepository
+import com.schloesser.masterthesis.entity.EmotionRecord
 import com.schloesser.masterthesis.presentation.extension.gone
 import com.schloesser.masterthesis.presentation.extension.visible
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.activity_user.*
+import kotlinx.android.synthetic.main.item_emotion_record.view.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.*
+import java.io.File
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
-import com.github.dhaval2404.imagepicker.ImagePicker
-import okhttp3.*
-import okhttp3.RequestBody.Companion.asRequestBody
 
-
-class MainActivity : AppCompatActivity() {
-
-    companion object {
-        const val PERMISSION_REQUEST = 231;
-    }
+class UserActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_user)
 
-        btnLogin.setOnClickListener { startActivity(Intent(this, LoginActivity::class.java)) }
-        btnUpload.setOnClickListener { openCameraIntent() }
+        btnUploadFace.setOnClickListener {
+            openCameraIntent()
+        }
+
+        swipeContainer.setOnRefreshListener {
+            loadEmotionRecords()
+        }
+
+        loadEmotionRecords()
     }
 
-    @AfterPermissionGranted(PERMISSION_REQUEST)
+    private fun loadEmotionRecords() {
+        ApiFactory.userApi.getAllEmotionRecords(SessionRepository.token ?: "")
+            .enqueue(object : Callback<List<EmotionRecord>> {
+
+                override fun onFailure(call: Call<List<EmotionRecord>>, t: Throwable) {
+                    swipeContainer.isRefreshing = false
+                    Toast.makeText(this@UserActivity, t.localizedMessage, Toast.LENGTH_LONG).show()
+                }
+
+                override fun onResponse(
+                    call: Call<List<EmotionRecord>>,
+                    response: Response<List<EmotionRecord>>
+                ) {
+                    swipeContainer.isRefreshing = false
+
+                    if (response.body() != null) {
+                        populateEmotionRecords(response.body()!!)
+                    }
+                }
+            })
+    }
+
+    private fun populateEmotionRecords(records: List<EmotionRecord>) {
+        emotionRecordContainer.removeAllViews()
+
+        val inflater = LayoutInflater.from(this)
+
+        records.forEach {
+            val item = inflater.inflate(R.layout.item_emotion_record, emotionRecordContainer, false)
+            item.txvEmotion.text = it.data
+            item.txvDate.text = it.created_at?.replace("T", "  ")
+            emotionRecordContainer.addView(item)
+        }
+    }
+
+
+    @AfterPermissionGranted(MainActivity.PERMISSION_REQUEST)
     private fun openCameraIntent() {
 
         if (EasyPermissions.hasPermissions(this, Manifest.permission.CAMERA)) {
@@ -53,9 +96,9 @@ class MainActivity : AppCompatActivity() {
 
         } else {
             EasyPermissions.requestPermissions(
-                this@MainActivity,
+                this,
                 "Kamera Zugriff benötigt.",
-                PERMISSION_REQUEST,
+                MainActivity.PERMISSION_REQUEST,
                 Manifest.permission.CAMERA
             )
         }
@@ -89,7 +132,7 @@ class MainActivity : AppCompatActivity() {
 
         val body = getRequestBody(file)
 
-        ApiFactory.emotionRecordApi.sendFrame(body).enqueue(object : Callback<String> {
+        ApiFactory.userApi.sendFace(body, SessionRepository.token!!).enqueue(object : Callback<String> {
             override fun onFailure(call: Call<String>, t: Throwable) {
                 loadingIndicator.gone()
                 txvResult.text = t.toString()
