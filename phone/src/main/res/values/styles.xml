@@ -7,7 +7,19 @@
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
 
-        <item name="android:titleTextColor">#fff</item>
+        <item name="android:titleTextAppearance">@style/AppbarTitle</item>
+        <item name="android:titleTextStyle">@style/AppbarTitle</item>
+
+        <item name="titleTextAppearance">@style/AppbarTitle</item>
+        <item name="titleTextStyle">@style/AppbarTitle</item>
+    </style>
+
+    <style name="AppbarTitle">
+        <item name="titleTextColor">#fff</item>
+        <item name="android:textColor">#fff</item>
+
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColorSecondary">@android:color/white</item>
     </style>
 
 </resources>

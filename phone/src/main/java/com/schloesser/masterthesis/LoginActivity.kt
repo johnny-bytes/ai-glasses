@@ -22,6 +22,11 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        if(SessionRepository.token != null) {
+            startActivity(Intent(this@LoginActivity, UserActivity::class.java))
+            finish()
+        }
+
         if (BuildConfig.DEBUG) {
             edtEmail.setText("timo@gmail.com")
             edtPassword.setText("123456")
@@ -51,6 +56,7 @@ class LoginActivity : AppCompatActivity() {
                     if (response.code() == 200) {
                         SessionRepository.token = response.body()?.token
                         startActivity(Intent(this@LoginActivity, UserActivity::class.java))
+                        finish()
                     } else {
                         Toast.makeText(
                             this@LoginActivity,

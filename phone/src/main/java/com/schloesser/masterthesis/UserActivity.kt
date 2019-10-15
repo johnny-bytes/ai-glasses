@@ -43,6 +43,11 @@ class UserActivity : AppCompatActivity() {
             openCameraIntent()
         }
 
+        btnLogout.setOnClickListener {
+            SessionRepository.token = null
+            finish()
+        }
+
         swipeContainer.setOnRefreshListener {
             loadEmotionRecords()
         }
@@ -141,7 +146,6 @@ class UserActivity : AppCompatActivity() {
 
             override fun onResponse(call: Call<String>, response: Response<String>) {
                 loadingIndicator.gone()
-                Log.d("#TEST", response.body() ?: "Empty Response")
                 txvResult.text = response.body() ?: "Empty Response"
             }
         })
