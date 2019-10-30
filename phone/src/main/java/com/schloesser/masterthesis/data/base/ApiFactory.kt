@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 object ApiFactory {
 
 //    private var BASE_URL = "http://timoschloesser.dynalias.org:5000/"
-    private var BASE_URL = "http://172.29.255.135:5000/"
+    private var BASE_URL = "http://5.35.249.27:5005/"
 
     private val moshi: Moshi by lazy {
         Moshi.Builder().build()
@@ -22,7 +22,7 @@ object ApiFactory {
     private val okHttpClient: OkHttpClient by lazy {
         val builder = OkHttpClient.Builder()
 
-        builder.connectTimeout(2, TimeUnit.SECONDS)
+        builder.connectTimeout(20, TimeUnit.SECONDS)
         builder.callTimeout(20, TimeUnit.SECONDS)
         builder.readTimeout(20, TimeUnit.SECONDS)
 
