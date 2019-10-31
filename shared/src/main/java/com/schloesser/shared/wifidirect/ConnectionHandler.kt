@@ -1,4 +1,4 @@
-package com.schloesser.masterthesis
+package com.schloesser.shared.wifidirect
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver

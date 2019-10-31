@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -25,15 +26,15 @@ import java.net.Socket;
 public class VideoActivity extends AppCompatActivity {
     private TextView mStatus;
     private ImageView mCameraView;
-    public static String SERVERIP = "192.168.178.174";
-    public static final int SERVERPORT = 1337;
+    public static final int SERVERPORT = 12345;
     public MyClientThread mClient;
+    public Thread clientThread;
     public Bitmap mLastFrame;
 
     private int face_count;
     private final Handler handler = new MyHandler(this);
 
-    private FaceDetector mFaceDetector = new FaceDetector(320, 240, 10);
+    private FaceDetector mFaceDetector = new FaceDetector(240, 320, 10);
     private FaceDetector.Face[] faces = new FaceDetector.Face[10];
     private PointF tmp_point = new PointF();
     private Paint tmp_paint = new Paint();
@@ -49,6 +50,8 @@ public class VideoActivity extends AppCompatActivity {
                         if (mLastFrame != null) {
 
                             Bitmap mutableBitmap = mLastFrame.copy(Bitmap.Config.RGB_565, true);
+
+
                             face_count = mFaceDetector.findFaces(mLastFrame, faces);
                             Log.d("Face_Detection", "Face Count: " + String.valueOf(face_count));
                             Canvas canvas = new Canvas(mutableBitmap);
@@ -87,12 +90,20 @@ public class VideoActivity extends AppCompatActivity {
             @Override
             protected Void doInBackground(Void... unused) {
                 // Background Code
-                Socket s;
+                final Socket s;
                 try {
                     ServerSocket ss = new ServerSocket(SERVERPORT);
-                    s = ss.accept();
+                     s = ss.accept();
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(VideoActivity.this, "Connected to:" + s.getInetAddress().toString(), Toast.LENGTH_LONG).show();
+                        }
+                    });
                     mClient = new MyClientThread(s, handler);
-                    new Thread(mClient).start();
+                    clientThread = new Thread(mClient);
+                    clientThread.start();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -103,16 +114,9 @@ public class VideoActivity extends AppCompatActivity {
         mStatusChecker.run();
     }
 
-    public static Bitmap rotateImage(Bitmap source, float angle) {
-        if (source != null) {
-            Bitmap retVal;
-
-            Matrix matrix = new Matrix();
-            matrix.postRotate(angle);
-            retVal = Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
-            source.recycle();
-            return retVal;
-        }
-        return null;
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if(clientThread != null) clientThread.stop();
     }
 }

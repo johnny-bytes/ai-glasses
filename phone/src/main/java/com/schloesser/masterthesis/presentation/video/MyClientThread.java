@@ -48,7 +48,7 @@ public class MyClientThread implements Runnable {
                         if (is.readUTF().equals("#@@#")) {
 
                             int imgLength = is.readInt();
-                            System.out.println("getLength:" + imgLength);
+//                            System.out.println("getLength:" + imgLength);
                             System.out.println("back-token" + is.readUTF());
                             byte[] buffer = new byte[imgLength];
                             int len = 0;

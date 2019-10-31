@@ -1,6 +1,7 @@
 package com.schloesser.masterthesis
 
 import android.util.Log
+import com.schloesser.shared.wifidirect.SharedConstants
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.DataOutputStream
@@ -12,8 +13,7 @@ class ClientSocketThread(private val cameraPreview: CameraPreview) : Runnable {
 
     companion object {
         private const val TAG = "ClientSocketThread"
-        private const val SERVERIP = "192.168.49.43"
-        private const val SERVERPORT = 1337
+        private const val SERVERIP = "192.168.178.36"
     }
 
     private var socket: Socket? = null
@@ -22,7 +22,7 @@ class ClientSocketThread(private val cameraPreview: CameraPreview) : Runnable {
     init {
         GlobalScope.launch {
             try {
-                socket = Socket(SERVERIP, SERVERPORT)
+                socket = Socket(SERVERIP, SharedConstants.SERVERPORT)
                 socket!!.keepAlive = true
                 outputStream = socket!!.getOutputStream()
             } catch (e: IOException) {
@@ -32,26 +32,27 @@ class ClientSocketThread(private val cameraPreview: CameraPreview) : Runnable {
     }
 
     override fun run() {
-        Log.d(TAG, "run")
-
         try {
             while (true) {
-                if (outputStream != null && cameraPreview.mFrameBuffer != null) {
+                if (outputStream != null && cameraPreview.frameBuffer != null) {
+
+                    Log.d(TAG, "Start sending image.")
 
                     val dos = DataOutputStream(outputStream)
 
                     dos.writeInt(4)
                     dos.writeUTF("#@@#")
-                    dos.writeInt(cameraPreview.mFrameBuffer.size())
+                    dos.writeInt(cameraPreview.frameBuffer!!.size())
                     dos.writeUTF("-@@-")
                     dos.flush()
 
-
-                    dos.write(cameraPreview.mFrameBuffer.toByteArray())
+                    // Send image
+                    dos.write(cameraPreview.frameBuffer!!.toByteArray())
                     dos.flush()
-                    Thread.sleep((1000 / 30).toLong())
-                } else {
-                    Log.d(TAG, "socket is null")
+
+                    Log.d(TAG, "Sent image.")
+
+                    Thread.sleep((1000 / 15).toLong())
                 }
             }
         } catch (e: Exception) {
