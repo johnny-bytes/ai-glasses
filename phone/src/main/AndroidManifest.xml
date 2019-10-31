@@ -35,12 +35,17 @@
         tools:replace="android:theme">
 
         <activity
-            android:name=".UserActivity"
+            android:name=".presentation.user.UserActivity"
             android:launchMode="singleInstance"
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".presentation.login.LoginActivity"
+            android:launchMode="singleInstance"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".presentation.video.VideoActivity"
             android:launchMode="singleInstance"
             android:screenOrientation="portrait" />
 

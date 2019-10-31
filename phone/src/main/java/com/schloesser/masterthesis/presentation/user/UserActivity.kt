@@ -1,17 +1,15 @@
-package com.schloesser.masterthesis
+package com.schloesser.masterthesis.presentation.user
 
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.os.Environment
-import android.provider.MediaStore
-import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.FileProvider
 import com.github.dhaval2404.imagepicker.ImagePicker
+import com.schloesser.masterthesis.MainActivity
+import com.schloesser.masterthesis.R
 import com.schloesser.masterthesis.data.base.ApiFactory
 import com.schloesser.masterthesis.data.repository.SessionRepository
 import com.schloesser.masterthesis.entity.EmotionRecord
@@ -21,7 +19,6 @@ import kotlinx.android.synthetic.main.activity_user.*
 import kotlinx.android.synthetic.main.item_emotion_record.view.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
@@ -29,9 +26,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.io.File
-import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.*
 
 class UserActivity : AppCompatActivity() {
 

@@ -12,7 +12,7 @@ class ClientSocketThread(private val cameraPreview: CameraPreview) : Runnable {
 
     companion object {
         private const val TAG = "ClientSocketThread"
-        private const val SERVERIP = "192.168.178.121"
+        private const val SERVERIP = "192.168.49.43"
         private const val SERVERPORT = 1337
     }
 
@@ -39,12 +39,14 @@ class ClientSocketThread(private val cameraPreview: CameraPreview) : Runnable {
                 if (outputStream != null && cameraPreview.mFrameBuffer != null) {
 
                     val dos = DataOutputStream(outputStream)
+
                     dos.writeInt(4)
                     dos.writeUTF("#@@#")
                     dos.writeInt(cameraPreview.mFrameBuffer.size())
                     dos.writeUTF("-@@-")
                     dos.flush()
-                    println(cameraPreview.mFrameBuffer.size())
+
+
                     dos.write(cameraPreview.mFrameBuffer.toByteArray())
                     dos.flush()
                     Thread.sleep((1000 / 30).toLong())

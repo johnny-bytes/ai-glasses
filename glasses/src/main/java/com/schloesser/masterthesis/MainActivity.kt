@@ -96,10 +96,6 @@ class MainActivity : ActionMenuActivity() {
         )
     }
 
-    private fun connectToServer() {
-
-    }
-
     private fun initMessaging() {
         btnSubmit.isEnabled = true
         btnSubmit.setOnClickListener {
