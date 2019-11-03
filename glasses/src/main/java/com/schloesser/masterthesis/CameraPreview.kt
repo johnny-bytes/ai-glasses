@@ -7,6 +7,8 @@ import android.graphics.YuvImage
 import android.hardware.Camera
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import com.schloesser.shared.wifidirect.SharedConstants.Companion.FRAME_HEIGHT
+import com.schloesser.shared.wifidirect.SharedConstants.Companion.FRAME_WIDTH
 import java.io.ByteArrayOutputStream
 
 class CameraPreview(context: Context, private var camera: Camera?) : SurfaceView(context), SurfaceHolder.Callback, Camera.PreviewCallback {
@@ -45,7 +47,7 @@ class CameraPreview(context: Context, private var camera: Camera?) : SurfaceView
 
         try {
             val parameters = camera!!.parameters
-            parameters.setPreviewSize(320, 240)
+            parameters.setPreviewSize(FRAME_WIDTH, FRAME_HEIGHT)
 
             frameWidth = parameters.previewSize.width
             frameHeight = parameters.previewSize.height
@@ -53,7 +55,7 @@ class CameraPreview(context: Context, private var camera: Camera?) : SurfaceView
             parameters.previewFormat = ImageFormat.NV21
             camera!!.parameters = parameters
 
-            camera!!.setDisplayOrientation(90)
+//            camera!!.setDisplayOrientation(90)
 
             camera!!.setPreviewCallback(this)
             camera!!.startPreview()
@@ -68,7 +70,7 @@ class CameraPreview(context: Context, private var camera: Camera?) : SurfaceView
             val yuvimage = YuvImage(data, ImageFormat.NV21, frameWidth, frameHeight, null)
 
             val baos = ByteArrayOutputStream()
-            yuvimage.compressToJpeg(Rect(0, 0, frameWidth, frameHeight), 100, baos)
+            yuvimage.compressToJpeg(Rect(0, 0, frameWidth, frameHeight), 30, baos)
             frameBuffer = baos
         } catch (e: Exception) {
             e.printStackTrace()

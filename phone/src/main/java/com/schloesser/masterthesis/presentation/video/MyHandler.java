@@ -5,8 +5,6 @@ import android.graphics.Matrix;
 import android.os.Handler;
 import android.os.Message;
 
-import com.schloesser.masterthesis.MainActivity;
-
 import java.lang.ref.WeakReference;
 
 /**
@@ -24,7 +22,10 @@ class MyHandler extends Handler {
         VideoActivity activity = mActivity.get();
         if (activity != null) {
             try {
-                activity.mLastFrame = rotateImage((Bitmap) msg.obj, 90);
+//                activity.mLastFrame = rotateImage((Bitmap) msg.obj, 90);
+                activity.mLastFrame = (Bitmap) msg.obj;
+
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

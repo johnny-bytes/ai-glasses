@@ -23,10 +23,14 @@ import com.schloesser.masterthesis.R;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import static com.schloesser.shared.wifidirect.SharedConstants.FRAME_HEIGHT;
+import static com.schloesser.shared.wifidirect.SharedConstants.FRAME_WIDTH;
+import static com.schloesser.shared.wifidirect.SharedConstants.SERVERPORT;
+import static com.schloesser.shared.wifidirect.SharedConstants.TARGET_FPS;
+
 public class VideoActivity extends AppCompatActivity {
     private TextView mStatus;
     private ImageView mCameraView;
-    public static final int SERVERPORT = 12345;
     public MyClientThread mClient;
     public Thread clientThread;
     public Bitmap mLastFrame;
@@ -34,7 +38,7 @@ public class VideoActivity extends AppCompatActivity {
     private int face_count;
     private final Handler handler = new MyHandler(this);
 
-    private FaceDetector mFaceDetector = new FaceDetector(240, 320, 10);
+    private FaceDetector mFaceDetector = new FaceDetector(FRAME_WIDTH, FRAME_HEIGHT, 10);
     private FaceDetector.Face[] faces = new FaceDetector.Face[10];
     private PointF tmp_point = new PointF();
     private Paint tmp_paint = new Paint();
@@ -69,11 +73,9 @@ public class VideoActivity extends AppCompatActivity {
                         }
 
                     }
-                }); //this function can change value of mInterval.
+                });
             } finally {
-                // 100% guarantee that this always happens, even if
-                // your update method throws an exception
-                handler.postDelayed(mStatusChecker, 1000 / 15);
+                handler.postDelayed(mStatusChecker, 1000 / TARGET_FPS);
             }
         }
     };

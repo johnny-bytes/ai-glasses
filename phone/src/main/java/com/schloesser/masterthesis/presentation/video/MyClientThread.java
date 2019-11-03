@@ -12,9 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 
-/**
- * Created by Alvin on 2016-05-20.
- */
+import static com.schloesser.shared.wifidirect.SharedConstants.HEADER_START;
+
 public class MyClientThread implements Runnable {
     private Socket mSocket;
     private Handler mHandler;
@@ -45,7 +44,7 @@ public class MyClientThread implements Runnable {
                 try {
                     int token = is.readInt();
                     if (token == 4) {
-                        if (is.readUTF().equals("#@@#")) {
+                        if (is.readUTF().equals(HEADER_START)) {
 
                             int imgLength = is.readInt();
 //                            System.out.println("getLength:" + imgLength);
@@ -63,9 +62,8 @@ public class MyClientThread implements Runnable {
                                 System.out.println("Decode Failed");
                             }
                         }
-                    }else{
-                        Log.d(TAG,"Skip Dirty bytes!!!!"+Integer.toString(token));
                     }
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

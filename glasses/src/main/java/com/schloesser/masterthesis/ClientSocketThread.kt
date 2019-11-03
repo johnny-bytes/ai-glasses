@@ -2,6 +2,9 @@ package com.schloesser.masterthesis
 
 import android.util.Log
 import com.schloesser.shared.wifidirect.SharedConstants
+import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
+import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
+import com.schloesser.shared.wifidirect.SharedConstants.Companion.TARGET_FPS
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.DataOutputStream
@@ -41,9 +44,9 @@ class ClientSocketThread(private val cameraPreview: CameraPreview) : Runnable {
                     val dos = DataOutputStream(outputStream)
 
                     dos.writeInt(4)
-                    dos.writeUTF("#@@#")
+                    dos.writeUTF(HEADER_START)
                     dos.writeInt(cameraPreview.frameBuffer!!.size())
-                    dos.writeUTF("-@@-")
+                    dos.writeUTF(HEADER_END)
                     dos.flush()
 
                     // Send image
@@ -52,7 +55,7 @@ class ClientSocketThread(private val cameraPreview: CameraPreview) : Runnable {
 
                     Log.d(TAG, "Sent image.")
 
-                    Thread.sleep((1000 / 15).toLong())
+                    Thread.sleep((1000 / TARGET_FPS).toLong())
                 }
             }
         } catch (e: Exception) {
