@@ -1,5 +1,8 @@
+@file:Suppress("DEPRECATION")
+
 package com.schloesser.masterthesis
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.ImageFormat
 import android.graphics.Rect
@@ -9,9 +12,12 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.FRAME_HEIGHT
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.FRAME_WIDTH
+import com.schloesser.shared.wifidirect.SharedConstants.Companion.IMAGE_QUALITY
 import java.io.ByteArrayOutputStream
 
-class CameraPreview(context: Context, private var camera: Camera?) : SurfaceView(context), SurfaceHolder.Callback, Camera.PreviewCallback {
+// Camera 1 API is recommended for use with Vuzix Blade: https://www.vuzix.com/Developer/KnowledgeBase/Detail/1085
+@SuppressLint("ViewConstructor")
+class CameraPreview(context: Context, private var camera: Camera) : SurfaceView(context), SurfaceHolder.Callback, Camera.PreviewCallback {
     
     var frameBuffer: ByteArrayOutputStream? = null
 
@@ -22,17 +28,15 @@ class CameraPreview(context: Context, private var camera: Camera?) : SurfaceView
 
     override fun surfaceCreated(holder: SurfaceHolder) {
         try {
-            camera!!.setPreviewDisplay(holder)
+            camera.setPreviewDisplay(holder)
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
     }
 
     override fun surfaceDestroyed(holder: SurfaceHolder) {
-        camera!!.setPreviewCallback(null)
-        camera!!.release()
-        camera = null
+        camera.setPreviewCallback(null)
+        camera.release()
     }
 
     private var frameWidth: Int = 0
@@ -40,25 +44,23 @@ class CameraPreview(context: Context, private var camera: Camera?) : SurfaceView
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, w: Int, h: Int) {
         try {
-            camera!!.stopPreview()
+            camera.stopPreview()
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
         try {
-            val parameters = camera!!.parameters
+            val parameters = camera.parameters
             parameters.setPreviewSize(FRAME_WIDTH, FRAME_HEIGHT)
 
             frameWidth = parameters.previewSize.width
             frameHeight = parameters.previewSize.height
 
             parameters.previewFormat = ImageFormat.NV21
-            camera!!.parameters = parameters
+            camera.parameters = parameters
 
-//            camera!!.setDisplayOrientation(90)
-
-            camera!!.setPreviewCallback(this)
-            camera!!.startPreview()
+            camera.setPreviewCallback(this)
+            camera.startPreview()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -70,13 +72,12 @@ class CameraPreview(context: Context, private var camera: Camera?) : SurfaceView
             val yuvimage = YuvImage(data, ImageFormat.NV21, frameWidth, frameHeight, null)
 
             val baos = ByteArrayOutputStream()
-            yuvimage.compressToJpeg(Rect(0, 0, frameWidth, frameHeight), 30, baos)
+            yuvimage.compressToJpeg(Rect(0, 0, frameWidth, frameHeight), IMAGE_QUALITY, baos)
             frameBuffer = baos
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
     }
-
 }
 

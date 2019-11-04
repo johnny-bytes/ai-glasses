@@ -1,6 +1,10 @@
 package com.schloesser.masterthesis
 
-import android.util.Log
+import android.app.AlertDialog
+import android.content.Context
+import android.os.Handler
+import android.system.ErrnoException
+import android.view.WindowManager
 import com.schloesser.shared.wifidirect.SharedConstants
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
@@ -11,39 +15,62 @@ import java.io.DataOutputStream
 import java.io.IOException
 import java.io.OutputStream
 import java.net.Socket
+import java.net.SocketException
 
-class ClientSocketThread(private val cameraPreview: CameraPreview) : Runnable {
+class ClientSocketThread(private val cameraPreview: CameraPreview, private val context: Context, private val handler: Handler) : Runnable {
+
+    // TODO: refactor threading: currently new threads are launched when connection to host fails
 
     companion object {
         private const val TAG = "ClientSocketThread"
         private const val SERVERIP = "192.168.178.36"
     }
 
-    private var socket: Socket? = null
     private var outputStream: OutputStream? = null
 
-    init {
+    override fun run() {
+        connectToServer()
+    }
+
+    private fun connectToServer() {
         GlobalScope.launch {
             try {
-                socket = Socket(SERVERIP, SharedConstants.SERVERPORT)
-                socket!!.keepAlive = true
-                outputStream = socket!!.getOutputStream()
+                val socket = Socket(SERVERIP, SharedConstants.SERVERPORT)
+                socket.keepAlive = true
+                outputStream = socket.getOutputStream()
+
+                if (outputStream != null) {
+                    startLooper()
+                }
+
             } catch (e: IOException) {
                 e.printStackTrace()
+                showConnectionRetryDialog()
             }
         }
     }
 
-    override fun run() {
+    private fun showConnectionRetryDialog() {
+        handler.post {
+            val builder = AlertDialog.Builder(context)
+            builder.setMessage("Could not connect to $SERVERIP")
+            builder.setPositiveButton("Retry") { _, _ -> connectToServer() }
+
+            try {
+                builder.show()
+            } catch (e: WindowManager.BadTokenException) {
+                // Activity was closed.
+            }
+        }
+    }
+
+    private fun startLooper() {
         try {
             while (true) {
                 if (outputStream != null && cameraPreview.frameBuffer != null) {
 
-                    Log.d(TAG, "Start sending image.")
-
                     val dos = DataOutputStream(outputStream)
 
-                    dos.writeInt(4)
                     dos.writeUTF(HEADER_START)
                     dos.writeInt(cameraPreview.frameBuffer!!.size())
                     dos.writeUTF(HEADER_END)
@@ -52,8 +79,6 @@ class ClientSocketThread(private val cameraPreview: CameraPreview) : Runnable {
                     // Send image
                     dos.write(cameraPreview.frameBuffer!!.toByteArray())
                     dos.flush()
-
-                    Log.d(TAG, "Sent image.")
 
                     Thread.sleep((1000 / TARGET_FPS).toLong())
                 }
@@ -66,7 +91,10 @@ class ClientSocketThread(private val cameraPreview: CameraPreview) : Runnable {
             } catch (e2: Exception) {
                 e.printStackTrace()
             }
-        }
 
+            if (e is SocketException || e is ErrnoException) {
+                showConnectionRetryDialog()
+            }
+        }
     }
 }

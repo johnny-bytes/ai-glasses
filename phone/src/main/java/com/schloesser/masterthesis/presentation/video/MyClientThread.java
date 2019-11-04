@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 
+import static com.schloesser.shared.wifidirect.SharedConstants.HEADER_END;
 import static com.schloesser.shared.wifidirect.SharedConstants.HEADER_START;
 
 public class MyClientThread implements Runnable {
@@ -42,13 +43,15 @@ public class MyClientThread implements Runnable {
             DataInputStream is = new DataInputStream(inStream);
             while (mRunFlag) {
                 try {
-                    int token = is.readInt();
-                    if (token == 4) {
+
                         if (is.readUTF().equals(HEADER_START)) {
 
                             int imgLength = is.readInt();
-//                            System.out.println("getLength:" + imgLength);
-                            System.out.println("back-token" + is.readUTF());
+
+                            if (!is.readUTF().equals(HEADER_END)) {
+                                Log.d(TAG, "Header End Tag not present.");
+                            }
+
                             byte[] buffer = new byte[imgLength];
                             int len = 0;
                             while (len < imgLength) {
@@ -62,7 +65,7 @@ public class MyClientThread implements Runnable {
                                 System.out.println("Decode Failed");
                             }
                         }
-                    }
+
 
                 } catch (Exception e) {
                     e.printStackTrace();

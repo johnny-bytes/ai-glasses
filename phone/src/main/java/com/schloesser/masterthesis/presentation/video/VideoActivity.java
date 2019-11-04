@@ -1,6 +1,7 @@
 package com.schloesser.masterthesis.presentation.video;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -19,12 +20,15 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.schloesser.masterthesis.R;
+import com.vuzix.connectivity.sdk.Connectivity;
 
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import static com.schloesser.shared.wifidirect.SharedConstants.BROADCAST_FACE_COUNT;
 import static com.schloesser.shared.wifidirect.SharedConstants.FRAME_HEIGHT;
 import static com.schloesser.shared.wifidirect.SharedConstants.FRAME_WIDTH;
+import static com.schloesser.shared.wifidirect.SharedConstants.PARAM_FACE_COUNT;
 import static com.schloesser.shared.wifidirect.SharedConstants.SERVERPORT;
 import static com.schloesser.shared.wifidirect.SharedConstants.TARGET_FPS;
 
@@ -42,6 +46,8 @@ public class VideoActivity extends AppCompatActivity {
     private FaceDetector.Face[] faces = new FaceDetector.Face[10];
     private PointF tmp_point = new PointF();
     private Paint tmp_paint = new Paint();
+    private Connectivity connectivity;
+
 
 
     private Runnable mStatusChecker = new Runnable() {
@@ -55,9 +61,12 @@ public class VideoActivity extends AppCompatActivity {
 
                             Bitmap mutableBitmap = mLastFrame.copy(Bitmap.Config.RGB_565, true);
 
-
                             face_count = mFaceDetector.findFaces(mLastFrame, faces);
-                            Log.d("Face_Detection", "Face Count: " + String.valueOf(face_count));
+
+                            Intent intent = new Intent(BROADCAST_FACE_COUNT);
+                            intent.putExtra(PARAM_FACE_COUNT, face_count);
+                            connectivity.sendBroadcast(intent);
+
                             Canvas canvas = new Canvas(mutableBitmap);
 
                             for (int i = 0; i < face_count; i++) {
@@ -85,7 +94,9 @@ public class VideoActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video);
-        mCameraView = (ImageView) findViewById(R.id.camera_preview);
+        mCameraView = findViewById(R.id.camera_preview);
+
+        connectivity = Connectivity.get(this);
 
         new AsyncTask<Void, Void, Void>() {
 
