@@ -64,7 +64,6 @@ class CameraPreview(context: Context, private var camera: Camera) : SurfaceView(
         } catch (e: Exception) {
             e.printStackTrace()
         }
-
     }
 
     override fun onPreviewFrame(data: ByteArray, camera: Camera) {

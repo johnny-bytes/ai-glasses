@@ -28,7 +28,6 @@ public class MyClientThread implements Runnable {
         this.mSocket = socket;
         this.mHandler = handler;
         bitmap_options.inPreferredConfig = Bitmap.Config.RGB_565;
-        //br = new BufferedReader(new InputStreamReader(s.getInputStream()));
     }
 
     @Override

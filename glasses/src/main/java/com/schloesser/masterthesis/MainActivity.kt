@@ -11,6 +11,7 @@ import android.content.IntentFilter
 import android.hardware.Camera
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.widget.Toast
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.BROADCAST_FACE_COUNT
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.PARAM_FACE_COUNT
@@ -20,7 +21,7 @@ import kotlinx.coroutines.newFixedThreadPoolContext
 import pub.devrel.easypermissions.EasyPermissions
 
 
-class MainActivity : ActionMenuActivity() {
+class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
 
     companion object {
         const val TAG = "MainActivity"
@@ -56,7 +57,7 @@ class MainActivity : ActionMenuActivity() {
             preview = CameraPreview(this, camera!!)
             previewContainer.addView(preview)
 
-            thread = Thread(ClientSocketThread(preview!!, this, Handler()))
+            thread = Thread(ClientSocketThread(preview!!, this, Handler(), this))
             thread?.start()
 
         } else {
@@ -69,23 +70,10 @@ class MainActivity : ActionMenuActivity() {
         }
     }
 
-    private val broadcastReceiver by lazy {
-        object: BroadcastReceiver() {
-            @SuppressLint("SetTextI18n")
-            override fun onReceive(context: Context, intent: Intent) {
-                txvFaceCount.text = "Found ${intent.getIntExtra(PARAM_FACE_COUNT, 0)} faces."
-            }
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        registerReceiver(broadcastReceiver, IntentFilter(BROADCAST_FACE_COUNT))
-    }
-
-    override fun onStop() {
-        super.onStop()
-        unregisterReceiver(broadcastReceiver)
+    @SuppressLint("SetTextI18n")
+    override fun onFaceCountChanged(count: Int) {
+        Log.d(TAG, "onFaceCountChanged: $count")
+        txvFaceCount.text = "Found $count faces."
     }
 
     override fun onDestroy() {
