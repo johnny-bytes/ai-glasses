@@ -59,6 +59,7 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
             val builder = AlertDialog.Builder(context)
             builder.setMessage("Could not connect to $SERVERIP")
             builder.setPositiveButton("Retry") { _, _ -> connectToServer() }
+            builder.setCancelable(false)
 
             try {
                 builder.show()
@@ -110,6 +111,12 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
 
             try {
                 outputStream?.close()
+            } catch (e2: Exception) {
+                e.printStackTrace()
+            }
+
+            try {
+                inputStream?.close()
             } catch (e2: Exception) {
                 e.printStackTrace()
             }
