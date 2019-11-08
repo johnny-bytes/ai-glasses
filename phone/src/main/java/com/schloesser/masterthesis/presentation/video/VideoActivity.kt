@@ -2,9 +2,9 @@ package com.schloesser.masterthesis.presentation.video
 
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.PointF
 import android.os.Bundle
 import android.os.Handler
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.schloesser.masterthesis.R
@@ -12,17 +12,17 @@ import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.SERVERPORT
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.TARGET_FPS
+import kotlinx.android.synthetic.main.activity_video.*
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 import java.io.DataOutputStream
 import java.io.IOException
 import java.net.ServerSocket
 import java.net.Socket
+import kotlin.math.roundToInt
 
 
 class VideoActivity : AppCompatActivity() {
 
-    private var cameraPreview: ImageView? = null
     private var socketThread: Thread? = null
     private var outputStream: DataOutputStream? = null
     private var isPreviewUdaterRunning = true
@@ -35,7 +35,6 @@ class VideoActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video)
-        cameraPreview = findViewById(R.id.imvCameraPreview)
     }
 
     override fun onResume() {
@@ -77,7 +76,7 @@ class VideoActivity : AppCompatActivity() {
 
     private val previewUpdater = object : Runnable {
         override fun run() {
-            if(!isPreviewUdaterRunning) return
+            if (!isPreviewUdaterRunning) return
 
             try {
                 Handler().post {
@@ -97,9 +96,25 @@ class VideoActivity : AppCompatActivity() {
                             }
                         }
 
+                        if (faces.isNotEmpty()) {
+                            val face = faces[0]
+                            val center = PointF()
+                            face!!.getMidPoint(center)
+
+                            val faceBitmap = Bitmap.createBitmap(
+                                mutableBitmap,
+                                (center.x - face.eyesDistance()).roundToInt(),
+                                (center.y - face.eyesDistance()).roundToInt(),
+                                face.eyesDistance().roundToInt() * 2,
+                                face.eyesDistance().roundToInt() * 2
+                            )
+
+                            imvFace.setImageBitmap(faceBitmap)
+                        }
+
                         val canvas = Canvas(mutableBitmap)
                         faceDetection.drawFacesOnCanvas(faces, canvas)
-                        cameraPreview!!.setImageBitmap(mutableBitmap)
+                        imvCameraPreview!!.setImageBitmap(mutableBitmap)
                     }
                 }
             } finally {

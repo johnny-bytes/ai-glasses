@@ -56,11 +56,11 @@ constructor(private val socket: Socket, activity: VideoActivity) : Runnable {
         } catch (e: Exception) {
             e.printStackTrace()
 
-            try {
+/*            try {
                 inputStream?.close()
             } catch (e2: Exception) {
                 e.printStackTrace()
-            }
+            }*/
         }
     }
 
