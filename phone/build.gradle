@@ -5,13 +5,18 @@ apply plugin: 'kotlin-android-extensions'
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.2"
+
     defaultConfig {
         applicationId "com.schloesser.masterthesis"
-        minSdkVersion 22
+        minSdkVersion 24
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
     }
     buildTypes {
         release {
@@ -19,7 +24,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
+    aaptOptions {
+        noCompress "emotion_classifier.tflite"
+    }
 }
+
+
 
 dependencies {
 
@@ -39,6 +50,11 @@ dependencies {
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
     implementation 'com.github.dhaval2404:imagepicker:1.4'
     implementation 'pub.devrel:easypermissions:3.0.0'
+
+    // Tensorflow
+    implementation 'org.tensorflow:tensorflow-lite:1.15.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:1.15.0'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.0.0-nightly'
 
     // Vuzix
     implementation 'com.vuzix:connectivity-sdk:1.0'

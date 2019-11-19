@@ -16,5 +16,7 @@ class SharedConstants {
 
         const val BROADCAST_FACE_COUNT = "com.schloesser.masterthesis.FACE_COUNT"
         const val PARAM_FACE_COUNT = "face_count"
+
+        val EMOTION_LABELS = listOf("Angry", "Fear", "Happy", "Sad", "Surpirse", "Neutral")
     }
 }

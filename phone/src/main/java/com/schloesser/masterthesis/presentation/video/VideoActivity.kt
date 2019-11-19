@@ -5,9 +5,12 @@ import android.graphics.Canvas
 import android.graphics.PointF
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.schloesser.masterthesis.R
+import com.schloesser.masterthesis.data.classifier.Classifier
+import com.schloesser.shared.wifidirect.SharedConstants
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.SERVERPORT
@@ -32,9 +35,12 @@ class VideoActivity : AppCompatActivity() {
     var lastFrame: Bitmap? = null
         @Synchronized set
 
+    lateinit var emotionClassifier: Classifier
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video)
+        emotionClassifier = Classifier.create(this, Classifier.Model.FLOAT, Classifier.Device.GPU, 1)
     }
 
     override fun onResume() {
@@ -73,6 +79,7 @@ class VideoActivity : AppCompatActivity() {
     }
 
     private val faceDetection = FaceDetection()
+    private val faceBitmap = Bitmap.createBitmap(SharedConstants.FRAME_WIDTH, SharedConstants.FRAME_HEIGHT, Bitmap.Config.ARGB_8888);
 
     private val previewUpdater = object : Runnable {
         override fun run() {
@@ -85,18 +92,8 @@ class VideoActivity : AppCompatActivity() {
                         val mutableBitmap = lastFrame!!.copy(Bitmap.Config.RGB_565, true)
                         val faces = faceDetection.findFaces(mutableBitmap)
 
-                        doAsync {
-                            try {
-                                outputStream!!.writeUTF(HEADER_START)
-                                outputStream!!.writeInt(faces.size)
-                                outputStream!!.writeUTF(HEADER_END)
-                                outputStream!!.flush()
-                            } catch (e: IOException) {
-                                e.printStackTrace()
-                            }
-                        }
-
                         if (faces.isNotEmpty()) {
+                            Log.d("Classifier", "found faces")
                             val face = faces[0]
                             val center = PointF()
                             face!!.getMidPoint(center)
@@ -110,6 +107,20 @@ class VideoActivity : AppCompatActivity() {
                             )
 
                             imvFace.setImageBitmap(faceBitmap)
+                            emotionClassifier.recognizeImage(faceBitmap.copy(Bitmap.Config.ARGB_8888, true), 0)
+                        }
+
+
+
+                        doAsync {
+                            try {
+                                outputStream!!.writeUTF(HEADER_START)
+                                outputStream!!.writeInt(faces.size)
+                                outputStream!!.writeUTF(HEADER_END)
+                                outputStream!!.flush()
+                            } catch (e: IOException) {
+                                e.printStackTrace()
+                            }
                         }
 
                         val canvas = Canvas(mutableBitmap)
