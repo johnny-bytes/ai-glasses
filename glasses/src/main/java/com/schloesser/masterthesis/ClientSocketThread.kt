@@ -97,6 +97,9 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
                             val faceCount = inputStream!!.readInt()
                             handler.post { callback.onFaceCountChanged(faceCount)}
 
+                            val emotion = inputStream!!.readUTF()
+                            handler.post { callback.onEmotionChanged(emotion)}
+
                             if (inputStream!!.readUTF() != HEADER_END) {
                                 Log.d(TAG, "Header End Tag not present.")
                             }
@@ -129,5 +132,6 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
 
     interface Callback {
         fun onFaceCountChanged(count: Int)
+        fun onEmotionChanged(emotion: String)
     }
 }

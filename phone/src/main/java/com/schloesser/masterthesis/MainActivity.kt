@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.bluelinelabs.logansquare.LoganSquare
 import com.github.dhaval2404.imagepicker.ImagePicker
@@ -22,6 +23,10 @@ import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import org.opencv.android.InstallCallbackInterface
+import org.opencv.android.LoaderCallbackInterface
+import org.opencv.android.OpenCVLoader
+import org.opencv.core.Core
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 import retrofit2.Call
@@ -45,6 +50,22 @@ class MainActivity : AppCompatActivity()  {
         btnUpload.setOnClickListener { openCameraIntent() }
         btnConnect.setOnClickListener {
             startActivity(Intent(this, VideoActivity::class.java))
+        }
+
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_6, this, object: LoaderCallbackInterface {
+            override fun onManagerConnected(status: Int) {
+                Log.d(TAG, "onManagerConnected")
+            }
+
+            override fun onPackageInstall(operation: Int, callback: InstallCallbackInterface?) {
+                Log.d(TAG, "onPackageInstall")
+            }
+        })
+
+        if(OpenCVLoader.initDebug()){
+            Toast.makeText(this, "openCv successfully loaded", Toast.LENGTH_SHORT).show();
+        }else{
+            Toast.makeText(this, "openCv cannot be loaded", Toast.LENGTH_SHORT).show();
         }
     }
 

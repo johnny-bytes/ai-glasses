@@ -1,1 +1,1 @@
-include ':glasses',':phone', ':shared'
+include ':glasses',':phone', ':shared', ':openCV'

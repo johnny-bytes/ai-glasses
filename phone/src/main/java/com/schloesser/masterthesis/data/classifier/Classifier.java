@@ -279,27 +279,26 @@ public abstract class Classifier {
     /**
      * Runs inference and returns the classification results.
      */
-    public List<Recognition> recognizeImage(final Bitmap bitmap, int sensorOrientation) {
+    public List<Recognition> recognizeImage(final ByteBuffer bitmap, int sensorOrientation) {
         Log.d(TAG, "recognizeImage()");
 
         // Logs this method so that it can be analyzed with systrace.
         Trace.beginSection("recognizeImage");
 
-        Trace.beginSection("loadImage");
+/*        Trace.beginSection("loadImage");
         long startTimeForLoadImage = SystemClock.uptimeMillis();
-        inputImageBuffer = loadImage(bitmap, sensorOrientation);
+        inputImageBuffer =  loadImage(bitmap, sensorOrientation);
         long endTimeForLoadImage = SystemClock.uptimeMillis();
         Trace.endSection();
 
-//        ByteBuffer test = inputImageBuffer.getBuffer();
-//        int test2 = test.capacity();
+        Log.d(TAG, "Timecost to load the image: " + (endTimeForLoadImage - startTimeForLoadImage));*/
 
-        Log.d(TAG, "Timecost to load the image: " + (endTimeForLoadImage - startTimeForLoadImage));
 
         // Runs the inference call.
         Trace.beginSection("runInference");
         long startTimeForReference = SystemClock.uptimeMillis();
-        tflite.run(inputImageBuffer.getBuffer(), outputProbabilityBuffer.getBuffer().rewind());
+//        tflite.run(inputImageBuffer.getBuffer(), outputProbabilityBuffer.getBuffer().rewind());
+        tflite.run(bitmap, outputProbabilityBuffer.getBuffer().rewind());
         long endTimeForReference = SystemClock.uptimeMillis();
         Trace.endSection();
         Log.d(TAG, "Timecost to run model inference: " + (endTimeForReference - startTimeForReference));
@@ -352,7 +351,7 @@ public abstract class Classifier {
      */
     private TensorImage loadImage(final Bitmap bitmap, int sensorOrientation) {
         // Loads bitmap into a TensorImage.
-        inputImageBuffer.load(doGreyscale(bitmap));
+        inputImageBuffer.load(bitmap);
 
         // Creates processor for the TensorImage.
         int cropSize = Math.min(bitmap.getWidth(), bitmap.getHeight());
@@ -360,49 +359,12 @@ public abstract class Classifier {
         // TODO(b/143564309): Fuse ops inside ImageProcessor.
         ImageProcessor imageProcessor =
                 new ImageProcessor.Builder()
-//                        .add(new ResizeWithCropOrPadOp(cropSize, cropSize))
+                        .add(new ResizeWithCropOrPadOp(cropSize, cropSize))
                         .add(new ResizeOp(imageSizeX, imageSizeY, ResizeMethod.BILINEAR))
 //                        .add(new Rot90Op(numRoration))
-//                        .add(getPreprocessNormalizeOp())
+                        .add(getPreprocessNormalizeOp())
                         .build();
         return imageProcessor.process(inputImageBuffer);
-    }
-
-    private Bitmap doGreyscale(Bitmap src) {
-        // constant factors
-        final double GS_RED = 0.299;
-        final double GS_GREEN = 0.587;
-        final double GS_BLUE = 0.114;
-
-        // create output bitmap
-        Bitmap bmOut = Bitmap.createBitmap(src.getWidth(), src.getHeight(), src.getConfig());
-        // pixel information
-        int A, R, G, B;
-        int pixel;
-
-        // get image size
-        int width = src.getWidth();
-        int height = src.getHeight();
-
-        // scan through every single pixel
-        for(int x = 0; x < width; ++x) {
-            for(int y = 0; y < height; ++y) {
-                // get one pixel color
-                pixel = src.getPixel(x, y);
-                // retrieve color of all channels
-                A = Color.alpha(pixel);
-                R = Color.red(pixel);
-                G = Color.green(pixel);
-                B = Color.blue(pixel);
-                // take conversion up to one single value
-                R = G = B = (int)(GS_RED * R + GS_GREEN * G + GS_BLUE * B);
-                // set new pixel color to output bitmap
-                bmOut.setPixel(x, y, Color.argb(A, R, G, B));
-            }
-        }
-
-        // return final image
-        return bmOut;
     }
 
     /**

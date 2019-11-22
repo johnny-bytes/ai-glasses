@@ -72,8 +72,11 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
 
     @SuppressLint("SetTextI18n")
     override fun onFaceCountChanged(count: Int) {
-        Log.d(TAG, "onFaceCountChanged: $count")
         txvFaceCount.text = "Found $count faces."
+    }
+
+    override fun onEmotionChanged(emotion: String) {
+        txvEmotion.text = emotion
     }
 
     override fun onDestroy() {
