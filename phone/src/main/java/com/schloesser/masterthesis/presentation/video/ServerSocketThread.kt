@@ -1,15 +1,20 @@
 package com.schloesser.masterthesis.presentation.video
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Handler
 import android.system.ErrnoException
 import android.util.Log
+import com.schloesser.masterthesis.R
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import org.opencv.objdetect.CascadeClassifier
 import java.io.DataInputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.net.Socket

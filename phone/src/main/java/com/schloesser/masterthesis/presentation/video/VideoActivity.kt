@@ -1,16 +1,19 @@
 package com.schloesser.masterthesis.presentation.video
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.PointF
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.schloesser.masterthesis.R
 import com.schloesser.masterthesis.data.classifier.Classifier
 import com.schloesser.masterthesis.presentation.extension.toBitmap
 import com.schloesser.masterthesis.presentation.extension.toGray
+import com.schloesser.masterthesis.presentation.extension.toMat
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.FRAME_HEIGHT
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.FRAME_WIDTH
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
@@ -19,12 +22,13 @@ import com.schloesser.shared.wifidirect.SharedConstants.Companion.SERVERPORT
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.TARGET_FPS
 import kotlinx.android.synthetic.main.activity_video.*
 import org.jetbrains.anko.doAsync
-import org.opencv.core.CvType
+import org.opencv.core.*
 import org.opencv.core.CvType.CV_32F
-import org.opencv.core.Mat
-import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
+import org.opencv.objdetect.CascadeClassifier
 import java.io.DataOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.net.ServerSocket
 import java.net.Socket
@@ -37,6 +41,10 @@ import kotlin.math.roundToInt
 
 class VideoActivity : AppCompatActivity() {
 
+    companion object {
+        private const val TAG = "VideoActivity"
+    }
+
     private var socketThread: Thread? = null
     private var outputStream: DataOutputStream? = null
     private var isPreviewUdaterRunning = true
@@ -48,13 +56,49 @@ class VideoActivity : AppCompatActivity() {
 
     lateinit var emotionClassifier: Classifier
 
+    private lateinit var javaFaceDetector: CascadeClassifier
+    private lateinit var nativeFaceDetector: DetectionBasedTracker
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video)
         emotionClassifier = Classifier.create(this, Classifier.Model.FLOAT, Classifier.Device.GPU, 1)
+
+        initFaceDetection()
     }
 
+    private fun initFaceDetection() {
+        try {
+            // load cascade file from application resources
+            val inputStream = resources.openRawResource(R.raw.lbpcascade_frontalface)
+            val cascadeDir = getDir("cascade", Context.MODE_PRIVATE)
+            val cascadeFile = File(cascadeDir, "lbpcascade_frontalface.xml")
+            val os = FileOutputStream(cascadeFile)
 
+            val buffer = ByteArray(4096)
+            var bytesRead: Int = 0
+            while (bytesRead != -1) {
+                bytesRead = inputStream.read(buffer)
+                if (bytesRead != -1) os.write(buffer, 0, bytesRead)
+            }
+            inputStream.close()
+            os.close()
+
+            javaFaceDetector = CascadeClassifier(cascadeFile.absolutePath)
+            if (javaFaceDetector.empty()) {
+                Log.e(TAG, "Failed to load cascade classifier")
+            } else
+                Log.i(TAG, "Loaded cascade classifier from " + cascadeFile.absolutePath)
+
+//            nativeFaceDetector = DetectionBasedTracker(cascadeFile.absolutePath, 0)
+
+            cascadeDir.delete()
+
+        } catch (e: IOException) {
+            e.printStackTrace()
+            Log.e(TAG, "Failed to load cascade. Exception thrown: $e")
+        }
+    }
 
     override fun onResume() {
         super.onResume()
@@ -91,7 +135,8 @@ class VideoActivity : AppCompatActivity() {
         }
     }
 
-    private val faceDetection = FaceDetection()
+    private val faceRectColor = Scalar(0.0, 255.0, 0.0, 255.0)
+//    private val faceDetection = FaceDetection()
     private val grayscaleFace = Mat(FRAME_HEIGHT, FRAME_WIDTH, CvType.CV_8UC4)
     private val faceData: ByteBuffer by lazy {
         val buffer = ByteBuffer.allocateDirect(1 * 100 * 100 * 4)
@@ -106,32 +151,25 @@ class VideoActivity : AppCompatActivity() {
             try {
                 Handler().post {
                     if (lastFrame != null) {
+                        val frameMat = lastFrame!!.toMat()
 
-                        val mutableBitmap = lastFrame!!.copy(Bitmap.Config.RGB_565, true)
-                        val faces = faceDetection.findFaces(mutableBitmap)
+                        val grayFrameMat = Mat()
+                        Imgproc.cvtColor(frameMat, grayFrameMat, Imgproc.COLOR_RGB2GRAY)
+
                         var emotion = ""
+                        val faces = MatOfRect()
+                        javaFaceDetector.detectMultiScale(frameMat, faces, 1.1, 2, 2, Size(30.0, 30.0), Size())
+                        val facesArray = faces.toArray();
 
-                        if (faces.isNotEmpty()) {
-                            val face = faces[0]
-                            val center = PointF()
-                            face!!.getMidPoint(center)
+                        if (facesArray.isNotEmpty()) {
 
-                            val x = max(0, (center.x - face.eyesDistance() * 2).roundToInt())
-                            val y = max(0, (center.y - face.eyesDistance() * 2).roundToInt())
-
-                            val width = min((center.x + face.eyesDistance() * 4), mutableBitmap.width - center.x).roundToInt()
-                            val height = min((center.y + face.eyesDistance() * 4), mutableBitmap.height - center.y).roundToInt()
-
-                            val faceBitmap = Bitmap.createBitmap(mutableBitmap, x, y, width, height)
-
-                            grayscaleFace.toGray(faceBitmap)
+                            val croppedMat = Mat(grayFrameMat, facesArray[0])
 
                             val scaleSize = Size(100.0, 100.0)
                             val scaledFace = Mat()
-                            Imgproc.resize(grayscaleFace, scaledFace, scaleSize)
+                            Imgproc.resize(croppedMat, scaledFace, scaleSize)
 
-                            val greyFace = scaledFace.toBitmap()
-                            imvFace.setImageBitmap(greyFace)
+                            imvFace.setImageBitmap(scaledFace.toBitmap())
 
                             val floatMat = Mat()
                             scaledFace.convertTo(floatMat, CV_32F)
@@ -150,7 +188,7 @@ class VideoActivity : AppCompatActivity() {
                         doAsync {
                             try {
                                 outputStream!!.writeUTF(HEADER_START)
-                                outputStream!!.writeInt(faces.size)
+                                outputStream!!.writeInt(facesArray.size)
                                 outputStream!!.writeUTF(emotion)
                                 outputStream!!.writeUTF(HEADER_END)
                                 outputStream!!.flush()
@@ -159,9 +197,10 @@ class VideoActivity : AppCompatActivity() {
                             }
                         }
 
-                        val canvas = Canvas(mutableBitmap)
-                        faceDetection.drawFacesOnCanvas(faces, canvas)
-                        imvCameraPreview!!.setImageBitmap(mutableBitmap)
+                        facesArray.forEach { face ->
+                            Imgproc.rectangle(frameMat, face.tl(), face.br(), faceRectColor, 3);
+                        }
+                        imvCameraPreview!!.setImageBitmap(frameMat.toBitmap())
                     }
                 }
             } finally {
