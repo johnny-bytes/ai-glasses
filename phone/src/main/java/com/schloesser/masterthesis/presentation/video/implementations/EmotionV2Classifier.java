@@ -13,9 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package com.schloesser.masterthesis.data.classifier;
+package com.schloesser.masterthesis.presentation.video.implementations;
 
 import android.app.Activity;
+
+import com.schloesser.masterthesis.presentation.video.base.Classifier;
 
 import org.tensorflow.lite.support.common.TensorOperator;
 import org.tensorflow.lite.support.common.ops.NormalizeOp;
@@ -25,7 +27,7 @@ import java.io.IOException;
 /**
  * This TensorFlowLite classifier works with the float MobileNet model.
  */
-public class EmotionClassifier extends Classifier {
+public class EmotionV2Classifier extends Classifier {
 
     /**
      * Float MobileNet requires additional normalization of the used input.
@@ -47,22 +49,19 @@ public class EmotionClassifier extends Classifier {
      *
      * @param activity
      */
-    public EmotionClassifier(Activity activity, Device device, int numThreads)
+    public EmotionV2Classifier(Activity activity, Device device, int numThreads)
             throws IOException {
         super(activity, device, numThreads);
     }
 
     @Override
     protected String getModelPath() {
-        // you can download this file from
-        // see build.gradle for where to obtain this file. It should be auto
-        // downloaded into assets.
-        return "emotion_classifier.tflite";
+        return "model_v6_23.tflite";
     }
 
     @Override
     protected String getLabelPath() {
-        return "emotion_labels.txt";
+        return "model_v6_23_labels.txt";
     }
 
     @Override

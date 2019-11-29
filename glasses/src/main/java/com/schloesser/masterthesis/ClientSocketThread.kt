@@ -25,8 +25,8 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
 
     companion object {
         private const val TAG = "ClientSocketThread"
-//        private const val SERVERIP = "192.168.178.36"
-        private const val SERVERIP = "192.168.178.121"
+        private const val SERVERIP = "192.168.178.36"
+//        private const val SERVERIP = "192.168.178.121"
     }
 
     private var outputStream: OutputStream? = null

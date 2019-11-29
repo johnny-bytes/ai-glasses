@@ -13,19 +13,16 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package com.schloesser.masterthesis.data.classifier;
+package com.schloesser.masterthesis.presentation.video.base;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.ColorMatrixColorFilter;
-import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.SystemClock;
 import android.os.Trace;
 import android.util.Log;
+
+import com.schloesser.masterthesis.presentation.video.implementations.EmotionClassifier;
 
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.Interpreter;
@@ -39,7 +36,6 @@ import org.tensorflow.lite.support.image.TensorImage;
 import org.tensorflow.lite.support.image.ops.ResizeOp;
 import org.tensorflow.lite.support.image.ops.ResizeOp.ResizeMethod;
 import org.tensorflow.lite.support.image.ops.ResizeWithCropOrPadOp;
-import org.tensorflow.lite.support.image.ops.Rot90Op;
 import org.tensorflow.lite.support.label.TensorLabel;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
@@ -264,8 +260,6 @@ public abstract class Classifier {
                 tflite.getOutputTensor(probabilityTensorIndex).shape(); // {1, NUM_CLASSES}
         DataType probabilityDataType = tflite.getOutputTensor(probabilityTensorIndex).dataType();
 
-        // Creates the input tensor.
-        inputImageBuffer = new TensorImage(imageDataType);
 
         // Creates the output tensor and its processor.
         outputProbabilityBuffer = TensorBuffer.createFixedSize(probabilityShape, probabilityDataType);
@@ -285,19 +279,9 @@ public abstract class Classifier {
         // Logs this method so that it can be analyzed with systrace.
         Trace.beginSection("recognizeImage");
 
-/*        Trace.beginSection("loadImage");
-        long startTimeForLoadImage = SystemClock.uptimeMillis();
-        inputImageBuffer =  loadImage(bitmap, sensorOrientation);
-        long endTimeForLoadImage = SystemClock.uptimeMillis();
-        Trace.endSection();
-
-        Log.d(TAG, "Timecost to load the image: " + (endTimeForLoadImage - startTimeForLoadImage));*/
-
-
         // Runs the inference call.
         Trace.beginSection("runInference");
         long startTimeForReference = SystemClock.uptimeMillis();
-//        tflite.run(inputImageBuffer.getBuffer(), outputProbabilityBuffer.getBuffer().rewind());
         tflite.run(bitmap, outputProbabilityBuffer.getBuffer().rewind());
         long endTimeForReference = SystemClock.uptimeMillis();
         Trace.endSection();
@@ -349,19 +333,16 @@ public abstract class Classifier {
     /**
      * Loads input image, and applies preprocessing.
      */
-    private TensorImage loadImage(final Bitmap bitmap, int sensorOrientation) {
+    private TensorImage processImage(final Bitmap bitmap, int sensorOrientation) {
         // Loads bitmap into a TensorImage.
         inputImageBuffer.load(bitmap);
 
         // Creates processor for the TensorImage.
         int cropSize = Math.min(bitmap.getWidth(), bitmap.getHeight());
-        int numRoration = sensorOrientation / 90;
-        // TODO(b/143564309): Fuse ops inside ImageProcessor.
+
         ImageProcessor imageProcessor =
                 new ImageProcessor.Builder()
-                        .add(new ResizeWithCropOrPadOp(cropSize, cropSize))
                         .add(new ResizeOp(imageSizeX, imageSizeY, ResizeMethod.BILINEAR))
-//                        .add(new Rot90Op(numRoration))
                         .add(getPreprocessNormalizeOp())
                         .build();
         return imageProcessor.process(inputImageBuffer);
