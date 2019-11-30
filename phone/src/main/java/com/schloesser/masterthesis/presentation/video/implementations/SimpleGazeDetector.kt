@@ -12,17 +12,16 @@ class SimpleGazeDetector: GazeDetector  {
     override fun getGazeFaceIndex(frame: Mat, faces: Array<Rect>): Int? {
         if(faces.isNotEmpty()) {
             var largestFaceIndex = 0
-            var largestFaceSize = 0
+            var largestFaceSize = 0.0
             var index = 0
 
             faces.forEach {
-                if(it.width * it.height > largestFaceSize) {
+                if(it.area() > largestFaceSize) {
                     largestFaceIndex = index
-                    largestFaceSize = it.width * it.height
+                    largestFaceSize = it.area()
                 }
                 index++
             }
-
             return largestFaceIndex
         }
         return null
