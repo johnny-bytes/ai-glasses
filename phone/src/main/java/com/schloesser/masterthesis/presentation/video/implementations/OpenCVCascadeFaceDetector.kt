@@ -57,7 +57,7 @@ class OpenCVCascadeFaceDetector(context: Context): FaceDetector {
 
     override fun detectFaces(image: Mat): Array<Rect> {
         val faces = MatOfRect()
-        javaFaceDetector.detectMultiScale(image, faces, 1.1, 2, 2, Size(100.0, 100.0), Size())
+        javaFaceDetector.detectMultiScale(image, faces, 1.1, 4, 2, Size(100.0, 100.0), Size())
         return faces.toArray();
     }
 
