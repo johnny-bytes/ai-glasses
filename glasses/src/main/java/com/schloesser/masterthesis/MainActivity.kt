@@ -19,6 +19,7 @@ import com.vuzix.hud.actionmenu.ActionMenuActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.newFixedThreadPoolContext
 import pub.devrel.easypermissions.EasyPermissions
+import java.util.*
 
 
 class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
@@ -75,8 +76,25 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         txvFaceCount.text = "Found $count faces."
     }
 
+    private val emotionLabels = LimitedQueue<String>(20)
+
     override fun onEmotionChanged(emotion: String) {
-        txvEmotion.text = emotion
+        if(emotion.isNotBlank()) emotionLabels.add(emotion)
+
+        txvEmotion.text = getMedianEmotionLabel()
+    }
+
+
+    private fun getMedianEmotionLabel() : String {
+        var result = ""
+
+        if(emotionLabels.isNotEmpty()) {
+            val grouped = emotionLabels.groupBy { it }
+            val sorted = grouped.toList().sortedByDescending { (_, value) -> value.size}
+            result = sorted[0].first
+        }
+
+        return result
     }
 
     override fun onDestroy() {
@@ -92,5 +110,16 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults)
         startVideoStreaming()
+    }
+
+    inner class LimitedQueue<E>(private val limit: Int) : LinkedList<E>() {
+
+        override fun add(o: E): Boolean {
+            val added = super.add(o)
+            while (added && this.size > limit) {
+                super.remove()
+            }
+            return added
+        }
     }
 }
