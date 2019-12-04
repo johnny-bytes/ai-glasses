@@ -85,7 +85,7 @@ class UserActivity : AppCompatActivity() {
     }
 
 
-    @AfterPermissionGranted(MainActivity.PERMISSION_REQUEST)
+    @AfterPermissionGranted(MainActivity.PERMISSION_REQUEST_CAMERA)
     private fun openCameraIntent() {
 
         if (EasyPermissions.hasPermissions(this, Manifest.permission.CAMERA)) {
@@ -97,7 +97,7 @@ class UserActivity : AppCompatActivity() {
             EasyPermissions.requestPermissions(
                 this,
                 "Kamera Zugriff benötigt.",
-                MainActivity.PERMISSION_REQUEST,
+                MainActivity.PERMISSION_REQUEST_CAMERA,
                 Manifest.permission.CAMERA
             )
         }

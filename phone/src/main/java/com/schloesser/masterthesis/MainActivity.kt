@@ -7,13 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.bluelinelabs.logansquare.LoganSquare
 import com.github.dhaval2404.imagepicker.ImagePicker
-import com.peak.salut.Callbacks.SalutCallback
-import com.peak.salut.Callbacks.SalutDataCallback
-import com.peak.salut.Salut
-import com.peak.salut.SalutDataReceiver
-import com.peak.salut.SalutServiceData
 import com.schloesser.masterthesis.data.base.ApiFactory
 import com.schloesser.masterthesis.presentation.extension.gone
 import com.schloesser.masterthesis.presentation.extension.visible
@@ -26,7 +20,6 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import org.opencv.android.InstallCallbackInterface
 import org.opencv.android.LoaderCallbackInterface
 import org.opencv.android.OpenCVLoader
-import org.opencv.core.Core
 import pub.devrel.easypermissions.AfterPermissionGranted
 import pub.devrel.easypermissions.EasyPermissions
 import retrofit2.Call
@@ -35,11 +28,12 @@ import retrofit2.Response
 import java.io.File
 
 
-class MainActivity : AppCompatActivity()  {
+class MainActivity : AppCompatActivity() {
 
     companion object {
         const val TAG = "MainActivity"
-        const val PERMISSION_REQUEST = 231
+        const val PERMISSION_REQUEST_LOCATION = 10
+        const val PERMISSION_REQUEST_CAMERA = 20
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,28 +43,38 @@ class MainActivity : AppCompatActivity()  {
         btnLogin.setOnClickListener { startActivity(Intent(this, LoginActivity::class.java)) }
         btnUpload.setOnClickListener { openCameraIntent() }
         btnConnect.setOnClickListener {
-            startActivity(Intent(this, VideoActivity::class.java))
+            openVideoPreviewIntent()
         }
 
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_6, this, object: LoaderCallbackInterface {
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_6, this, object : LoaderCallbackInterface {
             override fun onManagerConnected(status: Int) {
-                Log.d(TAG, "onManagerConnected")
             }
 
             override fun onPackageInstall(operation: Int, callback: InstallCallbackInterface?) {
-                Log.d(TAG, "onPackageInstall")
             }
         })
 
-        if(OpenCVLoader.initDebug()){
-            Toast.makeText(this, "openCv successfully loaded", Toast.LENGTH_SHORT).show();
-        }else{
-            Toast.makeText(this, "openCv cannot be loaded", Toast.LENGTH_SHORT).show();
+        if (!OpenCVLoader.initDebug()) {
+            Toast.makeText(this, "openCV cannot be loaded", Toast.LENGTH_SHORT).show()
         }
     }
 
+    @AfterPermissionGranted(PERMISSION_REQUEST_LOCATION)
+    private fun openVideoPreviewIntent() {
 
-    @AfterPermissionGranted(PERMISSION_REQUEST)
+        if (EasyPermissions.hasPermissions(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+            startActivity(Intent(this, VideoActivity::class.java))
+        } else {
+            EasyPermissions.requestPermissions(
+                this@MainActivity,
+                "Location Permission is required for Bluetooth.",
+                PERMISSION_REQUEST_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+        }
+    }
+
+    @AfterPermissionGranted(PERMISSION_REQUEST_CAMERA)
     private fun openCameraIntent() {
 
         if (EasyPermissions.hasPermissions(this, Manifest.permission.CAMERA)) {
@@ -81,8 +85,8 @@ class MainActivity : AppCompatActivity()  {
         } else {
             EasyPermissions.requestPermissions(
                 this@MainActivity,
-                "Kamera Zugriff benötigt.",
-                PERMISSION_REQUEST,
+                "Cammera Permission required.",
+                PERMISSION_REQUEST_CAMERA,
                 Manifest.permission.CAMERA
             )
         }
@@ -129,31 +133,4 @@ class MainActivity : AppCompatActivity()  {
             }
         })
     }
-
-
-/*    private val network: MySalut by lazy {
-        val dataReceiver = SalutDataReceiver(this, null)
-        val serviceData = SalutServiceData("ed", 50489, "glasses")
-
-        MySalut(dataReceiver, serviceData, SalutCallback { Log.e(TAG, "Sorry, but this device does not support WiFi Direct."); })
-    }
-
-    private fun startServer() {
-        network.startNetworkService { device -> Log.d(TAG, device?.readableName + " has connected!"); }
-    }*/
-
-/*    override fun onDataReceived(data: Any?) {
-        Log.d(TAG, "Data: $data")
-    }
-
-    class MySalut(dataReceiver: SalutDataReceiver?, salutServiceData: SalutServiceData?, deviceNotSupported: SalutCallback?) : Salut(dataReceiver, salutServiceData, deviceNotSupported) {
-        override fun serialize(o: Any?): String {
-            return LoganSquare.serialize(o)
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        network.stopNetworkService(false);
-    }*/
 }

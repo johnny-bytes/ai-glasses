@@ -10,9 +10,9 @@ import android.graphics.YuvImage
 import android.hardware.Camera
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.FRAME_HEIGHT
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.FRAME_WIDTH
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.IMAGE_QUALITY
+import com.schloesser.shared.SharedConstants.Companion.FRAME_HEIGHT
+import com.schloesser.shared.SharedConstants.Companion.FRAME_WIDTH
+import com.schloesser.shared.SharedConstants.Companion.IMAGE_QUALITY
 import java.io.ByteArrayOutputStream
 
 // Camera 1 API is recommended for use with Vuzix Blade: https://www.vuzix.com/Developer/KnowledgeBase/Detail/1085

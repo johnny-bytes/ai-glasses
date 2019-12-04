@@ -1,9 +1,13 @@
-package com.schloesser.shared.wifidirect
+package com.schloesser.shared
+
+import java.util.*
 
 class SharedConstants {
 
     companion object {
-        const val SERVERPORT = 12345
+        const val SERVER_PORT = 12345
+        const val SERVER_NAME = "ARHappimeterServer"
+        val SERVER_UUID = UUID.fromString("0e6452aa-1387-11ea-8d71-362b9e155667")
 
         const val HEADER_START = "#HEADER#"
         const val HEADER_END = "#HEADER_END#"

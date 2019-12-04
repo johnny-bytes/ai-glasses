@@ -1,25 +1,29 @@
 package com.schloesser.masterthesis
 
 import android.app.AlertDialog
+import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.os.Handler
 import android.system.ErrnoException
 import android.util.Log
 import android.view.WindowManager
-import com.schloesser.shared.wifidirect.SharedConstants
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.TARGET_FPS
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import com.schloesser.shared.SharedConstants.Companion.HEADER_END
+import com.schloesser.shared.SharedConstants.Companion.HEADER_START
+import com.schloesser.shared.SharedConstants.Companion.TARGET_FPS
+import com.schloesser.shared.bluetooth.BluetoothManager
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.io.OutputStream
-import java.net.Socket
 import java.net.SocketException
 
-class ClientSocketThread(private val cameraPreview: CameraPreview, private val context: Context, private val handler: Handler, private val callback: Callback) : Runnable {
+class ClientSocketThread(
+    private val bluetoothManager: BluetoothManager,
+    private val cameraPreview: CameraPreview,
+    private val context: Context,
+    private val handler: Handler,
+    private val callback: Callback
+) : Runnable {
 
     // TODO: refactor threading: currently new threads are launched when connection to host fails
 
@@ -29,6 +33,7 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
 //        private const val SERVERIP = "192.168.178.121"
     }
 
+    private var socket: BluetoothSocket? = null
     private var outputStream: OutputStream? = null
     private var inputStream: DataInputStream? = null
 
@@ -37,12 +42,11 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
     }
 
     private fun connectToServer() {
-        GlobalScope.launch {
+        bluetoothManager.startDiscoveryAndConnectIfAvailable { socket ->
             try {
-                val socket = Socket(SERVERIP, SharedConstants.SERVERPORT)
-                socket.keepAlive = true
-                outputStream = socket.getOutputStream()
-                inputStream = DataInputStream(socket.getInputStream())
+                this.socket = socket
+                outputStream = socket.outputStream
+                inputStream = DataInputStream(socket.inputStream)
 
                 if (outputStream != null) {
                     startLooper()
@@ -92,14 +96,14 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
                 }
 
                 try {
-                    if (inputStream != null) {
+                    if (socket?.isConnected == true &&  inputStream != null) {
                         if (inputStream!!.readUTF() == HEADER_START) {
 
                             val faceCount = inputStream!!.readInt()
-                            handler.post { callback.onFaceCountChanged(faceCount)}
+                            handler.post { callback.onFaceCountChanged(faceCount) }
 
                             val emotion = inputStream!!.readUTF()
-                            handler.post { callback.onEmotionChanged(emotion)}
+                            handler.post { callback.onEmotionChanged(emotion) }
 
                             if (inputStream!!.readUTF() != HEADER_END) {
                                 Log.d(TAG, "Header End Tag not present.")
