@@ -76,7 +76,7 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         txvFaceCount.text = "Found $count faces."
     }
 
-    private val emotionLabels = LimitedQueue<String>(20)
+    private val emotionLabels = LimitedQueue<String>(10)
 
     override fun onEmotionChanged(emotion: String) {
         if(emotion.isNotBlank()) emotionLabels.add(emotion)
