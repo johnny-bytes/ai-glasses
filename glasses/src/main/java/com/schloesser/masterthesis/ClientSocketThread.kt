@@ -6,6 +6,7 @@ import android.os.Handler
 import android.system.ErrnoException
 import android.util.Log
 import android.view.WindowManager
+import android.widget.EditText
 import com.schloesser.shared.wifidirect.SharedConstants
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
@@ -25,10 +26,9 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
 
     companion object {
         private const val TAG = "ClientSocketThread"
-        private const val SERVERIP = "192.168.178.36"
-//        private const val SERVERIP = "192.168.178.121"
     }
 
+    private var settingsRepository = SettingsRepository(context)
     private var outputStream: OutputStream? = null
     private var inputStream: DataInputStream? = null
 
@@ -39,7 +39,7 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
     private fun connectToServer() {
         GlobalScope.launch {
             try {
-                val socket = Socket(SERVERIP, SharedConstants.SERVERPORT)
+                val socket = Socket(settingsRepository.getServerAddress(), SharedConstants.SERVERPORT)
                 socket.keepAlive = true
                 outputStream = socket.getOutputStream()
                 inputStream = DataInputStream(socket.getInputStream())
@@ -58,8 +58,16 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
     private fun showConnectionRetryDialog() {
         handler.post {
             val builder = AlertDialog.Builder(context)
-            builder.setMessage("Could not connect to $SERVERIP")
-            builder.setPositiveButton("Retry") { _, _ -> connectToServer() }
+            builder.setMessage("Could not connect to ${settingsRepository.getServerAddress()}")
+
+            val addressInput = EditText(context)
+            addressInput.setText(settingsRepository.getServerAddress())
+
+            builder.setView(addressInput)
+            builder.setPositiveButton("Retry") { _, _ ->
+                settingsRepository.setServerAddress(addressInput.text.toString())
+                connectToServer()
+            }
             builder.setCancelable(false)
 
             try {
