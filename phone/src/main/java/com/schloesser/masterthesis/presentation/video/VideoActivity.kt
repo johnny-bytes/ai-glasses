@@ -1,13 +1,17 @@
 package com.schloesser.masterthesis.presentation.video
 
+import android.content.Context
 import android.graphics.Bitmap
+import android.net.wifi.WifiManager
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.schloesser.masterthesis.R
-import com.schloesser.shared.wifidirect.SharedConstants
+import com.schloesser.masterthesis.presentation.extension.gone
+import com.schloesser.masterthesis.presentation.extension.visible
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.SERVERPORT
@@ -15,8 +19,12 @@ import kotlinx.android.synthetic.main.activity_video.*
 import org.jetbrains.anko.doAsync
 import java.io.DataOutputStream
 import java.io.IOException
+import java.math.BigInteger
+import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.UnknownHostException
+import java.nio.ByteOrder
 
 
 class VideoActivity : AppCompatActivity(), ProcessFrameTask.Callback {
@@ -37,6 +45,8 @@ class VideoActivity : AppCompatActivity(), ProcessFrameTask.Callback {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+
+        txvIpAddress.text = wifiIpAddress()
     }
 
     override fun onResume() {
@@ -93,7 +103,7 @@ class VideoActivity : AppCompatActivity(), ProcessFrameTask.Callback {
     private val processingRunnable = object : Runnable {
         override fun run() {
             try {
-                if(lastFrame != null) {
+                if (lastFrame != null) {
                     processFrameTask.run(lastFrame!!, this@VideoActivity)
                     lastFrame = null // Set as null to avoid multiple processing
                 }
@@ -130,5 +140,27 @@ class VideoActivity : AppCompatActivity(), ProcessFrameTask.Callback {
     override fun onPause() {
         super.onPause()
         stopServer()
+    }
+
+    protected fun wifiIpAddress(): String? {
+        val wifiManager = getSystemService(Context.WIFI_SERVICE) as WifiManager
+        var ipAddress = wifiManager.connectionInfo.ipAddress
+
+        // Convert little-endian to big-endianif needed
+        if (ByteOrder.nativeOrder().equals(ByteOrder.LITTLE_ENDIAN)) {
+            ipAddress = Integer.reverseBytes(ipAddress)
+        }
+
+        val ipByteArray = BigInteger.valueOf(ipAddress.toLong()).toByteArray()
+
+        var ipAddressString: String?
+        try {
+            ipAddressString = InetAddress.getByAddress(ipByteArray).getHostAddress()
+        } catch (ex: UnknownHostException) {
+            Log.e("WIFIIP", "Unable to get host address.")
+            ipAddressString = null
+        }
+
+        return ipAddressString
     }
 }

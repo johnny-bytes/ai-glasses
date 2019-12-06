@@ -18,7 +18,9 @@ import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
 import java.io.OutputStream
+import java.net.InetSocketAddress
 import java.net.Socket
+import java.net.SocketAddress
 import java.net.SocketException
 
 class ClientSocketThread(private val cameraPreview: CameraPreview, private val context: Context, private val handler: Handler, private val callback: Callback) : Runnable {
@@ -40,7 +42,8 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
     private fun connectToServer() {
         GlobalScope.launch {
             try {
-                val socket = Socket(settingsRepository.getServerAddress(), SharedConstants.SERVERPORT)
+                val socket = Socket()
+                socket.connect(InetSocketAddress(settingsRepository.getServerAddress(), SharedConstants.SERVERPORT), 3000)
                 socket.keepAlive = true
                 outputStream = socket.getOutputStream()
                 inputStream = DataInputStream(socket.getInputStream())

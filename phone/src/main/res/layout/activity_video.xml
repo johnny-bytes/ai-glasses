@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -8,11 +9,22 @@
         android:id="@+id/imvCameraPreview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#000" />
+        android:background="#000"
+        android:layout_above="@+id/txvIpAddress"/>
 
     <ImageView
         android:id="@+id/imvFace"
-        android:scaleType="fitCenter"
         android:layout_width="100dp"
-        android:layout_height="100dp" />
+        android:layout_height="100dp"
+        android:scaleType="fitCenter" />
+
+    <TextView
+        android:id="@+id/txvIpAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#000"
+        android:padding="3dp"
+        android:layout_alignParentBottom="true"
+        android:textColor="#fff"
+        tools:text="192.168.1.1" />
 </RelativeLayout>
