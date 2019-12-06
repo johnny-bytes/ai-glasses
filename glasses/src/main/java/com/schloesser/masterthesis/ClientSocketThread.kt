@@ -7,6 +7,7 @@ import android.system.ErrnoException
 import android.util.Log
 import android.view.WindowManager
 import android.widget.EditText
+import androidx.core.view.ViewCompat
 import com.schloesser.shared.wifidirect.SharedConstants
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
@@ -65,13 +66,21 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
 
             builder.setView(addressInput)
             builder.setPositiveButton("Retry") { _, _ ->
-                settingsRepository.setServerAddress(addressInput.text.toString())
+                settingsRepository.setServerAddress(addressInput.text.toString().trim())
                 connectToServer()
             }
             builder.setCancelable(false)
 
             try {
-                builder.show()
+                val dialog = builder.show()
+                dialog.setOnShowListener {
+                    addressInput.clearFocus()
+                    val retryButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                    retryButton.isFocusable = true
+                    retryButton.isFocusableInTouchMode = true
+                    retryButton.requestFocus()
+                    retryButton.requestFocusFromTouch()
+                }
             } catch (e: WindowManager.BadTokenException) {
                 // Activity was closed.
             }

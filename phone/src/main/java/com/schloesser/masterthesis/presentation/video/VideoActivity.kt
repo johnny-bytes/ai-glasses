@@ -3,6 +3,7 @@ package com.schloesser.masterthesis.presentation.video
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Handler
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.schloesser.masterthesis.R
@@ -35,12 +36,24 @@ class VideoActivity : AppCompatActivity(), ProcessFrameTask.Callback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     override fun onResume() {
         super.onResume()
+        startServer()
+    }
+
+    private fun startServer() {
         initServerSocket()
         processingRunnable.run()
+    }
+
+    private fun stopServer() {
+        if (socketThread != null) socketThread!!.interrupt()
+        if (socket != null) socket!!.close()
+        if (serverSocket != null) serverSocket!!.close()
+        processFrameTask.stop()
     }
 
     private fun initServerSocket() {
@@ -56,8 +69,17 @@ class VideoActivity : AppCompatActivity(), ProcessFrameTask.Callback {
                 }
 
                 showStatus("Connected to:" + socket!!.inetAddress.toString())
-                socketThread = Thread(ServerSocketThread(socket!!, this@VideoActivity))
+
+                socketThread = Thread(ServerSocketThread(socket!!, this@VideoActivity) { _ ->
+                    showStatus("Connection lost")
+                    imvCameraPreview.setImageBitmap(null)
+                    imvFace.setImageBitmap(null)
+
+                    stopServer()
+                    startServer()
+                })
                 socketThread!!.start()
+
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -105,11 +127,8 @@ class VideoActivity : AppCompatActivity(), ProcessFrameTask.Callback {
         runOnUiThread { Toast.makeText(this@VideoActivity, message, Toast.LENGTH_LONG).show() }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        if (socketThread != null) socketThread!!.interrupt()
-        if (socket != null) socket!!.close()
-        if (serverSocket != null) serverSocket!!.close()
-        processFrameTask.stop()
+    override fun onPause() {
+        super.onPause()
+        stopServer()
     }
 }

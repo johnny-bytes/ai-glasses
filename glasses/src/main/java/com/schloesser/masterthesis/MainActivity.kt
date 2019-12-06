@@ -12,6 +12,7 @@ import android.hardware.Camera
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
+import android.view.WindowManager
 import android.widget.Toast
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.BROADCAST_FACE_COUNT
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.PARAM_FACE_COUNT
@@ -32,6 +33,7 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
         startVideoStreaming()
     }

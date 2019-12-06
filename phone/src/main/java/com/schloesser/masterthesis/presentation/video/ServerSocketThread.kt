@@ -1,27 +1,18 @@
 package com.schloesser.masterthesis.presentation.video
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Handler
-import android.system.ErrnoException
 import android.util.Log
-import com.schloesser.masterthesis.R
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
-import org.opencv.objdetect.CascadeClassifier
 import java.io.DataInputStream
-import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.net.Socket
-import java.net.SocketException
 
 class ServerSocketThread @Throws(IOException::class)
-constructor(private val socket: Socket, activity: VideoActivity) : Runnable {
+constructor(private val socket: Socket, activity: VideoActivity, private val callback: (Throwable) -> Unit) : Runnable {
 
     companion object {
         private const val TAG = "ServerSocketThread"
@@ -56,11 +47,11 @@ constructor(private val socket: Socket, activity: VideoActivity) : Runnable {
     private fun startLooper() {
         try {
             while (!Thread.currentThread().isInterrupted) {
-                if(inputStream != null) readInputStream()
+                if (inputStream != null) readInputStream()
             }
         } catch (e: Exception) {
             e.printStackTrace()
-
+//            callback(e)
 /*            try {
                 inputStream?.close()
             } catch (e2: Exception) {
