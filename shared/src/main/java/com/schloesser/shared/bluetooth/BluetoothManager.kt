@@ -52,9 +52,7 @@ class BluetoothManager(private val context: Context, private val handler: Handle
         if (device != null) {
             connectThread = ConnectThread(bluetoothAdapter, device, object : ConnectThread.ConnectCallback {
                 override fun onConnectedToServer(socket: BluetoothSocket) {
-                    handler.post {
-                        clientCallback?.invoke(socket)
-                    }
+                    clientCallback?.invoke(socket)
                 }
             })
             connectThread?.start()

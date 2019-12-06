@@ -16,7 +16,7 @@ class SharedConstants {
         const val FRAME_HEIGHT = 720
 
         const val TARGET_FPS = 15
-        const val IMAGE_QUALITY = 90
+        const val IMAGE_QUALITY = 10
 
         const val BROADCAST_FACE_COUNT = "com.schloesser.masterthesis.FACE_COUNT"
         const val PARAM_FACE_COUNT = "face_count"

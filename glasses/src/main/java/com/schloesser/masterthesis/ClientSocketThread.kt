@@ -54,7 +54,10 @@ class ClientSocketThread(
 
             } catch (e: IOException) {
                 e.printStackTrace()
-                showConnectionRetryDialog()
+
+                handler.post {
+                    showConnectionRetryDialog()
+                }
             }
         }
     }
@@ -77,6 +80,8 @@ class ClientSocketThread(
     private fun startLooper() {
         try {
             while (true) {
+                Log.d(TAG, "tick")
+
                 if (outputStream != null
                     && cameraPreview.frameBuffer != null
                     && cameraPreview.frameBuffer!!.size() > 0
@@ -88,33 +93,47 @@ class ClientSocketThread(
                     dos.writeUTF(HEADER_END)
                     dos.flush()
 
+                    Log.d(TAG, "Attempting to send frame")
+
                     // Send image
                     dos.write(cameraPreview.frameBuffer!!.toByteArray())
                     dos.flush()
 
+                    Log.d(TAG, "Sent frame")
+
                     Thread.sleep((1000 / TARGET_FPS).toLong())
-                }
 
-                try {
-                    if (socket?.isConnected == true &&  inputStream != null) {
-                        if (inputStream!!.readUTF() == HEADER_START) {
+                    Log.d(TAG, "Finished Sleeping")
 
-                            val faceCount = inputStream!!.readInt()
-                            handler.post { callback.onFaceCountChanged(faceCount) }
+                    try {
+                        if (socket?.isConnected == true &&  inputStream != null) {
+                            if (inputStream!!.readUTF() == HEADER_START) {
 
-                            val emotion = inputStream!!.readUTF()
-                            handler.post { callback.onEmotionChanged(emotion) }
+                                val faceCount = inputStream!!.readInt()
+//                            handler.post { callback.onFaceCountChanged(faceCount) }
 
-                            if (inputStream!!.readUTF() != HEADER_END) {
-                                Log.d(TAG, "Header End Tag not present.")
+                                val emotion = inputStream!!.readUTF()
+//                            handler.post { callback.onEmotionChanged(emotion) }
+
+                                if (inputStream!!.readUTF() != HEADER_END) {
+                                    Log.d(TAG, "Header End Tag not present.")
+                                }
+                            } else {
+                                Log.d(TAG, "Start Header not present")
                             }
+                        } else {
+                            Log.d(TAG, "Could not send read is")
                         }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
+
+                } else {
+                    Log.d(TAG, "Could not send frame: ${outputStream} / ${cameraPreview.frameBuffer}")
                 }
             }
         } catch (e: Exception) {
+            Log.d(TAG, "tick ended")
             e.printStackTrace()
 
             try {
