@@ -1,0 +1,10 @@
+android {
+    signingConfigs {
+        release {
+            storeFile file('../buildsystem/signing/release.keystore')
+            storePassword 'vuvix2010'
+            keyAlias 'timoschloesser'
+            keyPassword 'vuvix2010'
+        }
+    }
+}
