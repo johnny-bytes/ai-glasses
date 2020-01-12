@@ -1,10 +1,10 @@
-package com.schloesser.masterthesis.presentation.video.implementations
+package com.schloesser.masterthesis.infrastructure.implementations
 
 import android.content.Context
 import android.util.Log
 import com.schloesser.masterthesis.R
-import com.schloesser.masterthesis.presentation.video.base.DetectionBasedTracker
-import com.schloesser.masterthesis.presentation.video.base.FaceDetector
+import com.schloesser.masterthesis.infrastructure.base.DetectionBasedTracker
+import com.schloesser.masterthesis.infrastructure.base.FaceDetector
 import org.opencv.core.Mat
 import org.opencv.core.MatOfRect
 import org.opencv.core.Rect

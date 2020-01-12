@@ -13,11 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package com.schloesser.masterthesis.presentation.video.implementations;
+package com.schloesser.masterthesis.infrastructure.implementations;
 
 import android.app.Activity;
 
-import com.schloesser.masterthesis.presentation.video.base.Classifier;
+import com.schloesser.masterthesis.infrastructure.base.Classifier;
 
 import org.tensorflow.lite.support.common.TensorOperator;
 import org.tensorflow.lite.support.common.ops.NormalizeOp;

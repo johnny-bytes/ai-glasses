@@ -9,8 +9,7 @@
         android:id="@+id/imvCameraPreview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#000"
-        android:layout_above="@+id/txvIpAddress"/>
+        android:background="#000"/>
 
     <ImageView
         android:id="@+id/imvFace"
@@ -18,13 +17,4 @@
         android:layout_height="100dp"
         android:scaleType="fitCenter" />
 
-    <TextView
-        android:id="@+id/txvIpAddress"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#000"
-        android:padding="3dp"
-        android:layout_alignParentBottom="true"
-        android:textColor="#fff"
-        tools:text="192.168.1.1" />
 </RelativeLayout>

@@ -13,7 +13,7 @@ import com.schloesser.masterthesis.data.response.AuthResponse
 import com.schloesser.masterthesis.presentation.extension.gone
 import com.schloesser.masterthesis.presentation.extension.hideKeyboard
 import com.schloesser.masterthesis.presentation.extension.visible
-import com.schloesser.masterthesis.presentation.user.UserActivity
+import com.schloesser.masterthesis.presentation.internal.InternalActivity
 import kotlinx.android.synthetic.main.activity_login.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -26,7 +26,7 @@ class LoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_login)
 
         if(SessionRepository.token != null) {
-            startActivity(Intent(this@LoginActivity, UserActivity::class.java))
+            startActivity(Intent(this@LoginActivity, InternalActivity::class.java))
             finish()
         }
 
@@ -39,7 +39,7 @@ class LoginActivity : AppCompatActivity() {
             it.hideKeyboard()
             loadingIndicator.visible()
 
-            ApiFactory.userApi.login(
+            ApiFactory.api.login(
                 LoginRequest(
                     edtUsername.text.toString(),
                     edtPassword.text.toString()
@@ -58,7 +58,7 @@ class LoginActivity : AppCompatActivity() {
 
                     if (response.code() == 200) {
                         SessionRepository.token = response.body()?.token?.access
-                        startActivity(Intent(this@LoginActivity, UserActivity::class.java))
+                        startActivity(Intent(this@LoginActivity, InternalActivity::class.java))
                         finish()
                     } else {
                         Toast.makeText(

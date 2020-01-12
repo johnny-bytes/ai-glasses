@@ -1,4 +1,4 @@
-package com.schloesser.masterthesis.presentation.video.base
+package com.schloesser.masterthesis.infrastructure.base
 
 import org.opencv.core.Mat
 import org.opencv.core.Rect

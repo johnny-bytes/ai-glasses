@@ -1,4 +1,4 @@
-package com.schloesser.masterthesis.presentation.video.entity
+package com.schloesser.masterthesis.infrastructure.entity
 
 import org.opencv.core.Rect
 

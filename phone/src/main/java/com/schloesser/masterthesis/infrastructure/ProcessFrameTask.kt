@@ -1,13 +1,14 @@
-package com.schloesser.masterthesis.presentation.video
+package com.schloesser.masterthesis.infrastructure
 
-import android.app.Activity
+import android.content.Context
 import android.graphics.Bitmap
-import android.os.Handler
+import com.schloesser.masterthesis.infrastructure.base.Classifier
+import com.schloesser.masterthesis.infrastructure.implementations.EmotionClassifier
+import com.schloesser.masterthesis.infrastructure.implementations.OpenCVCascadeFaceDetector
+import com.schloesser.masterthesis.infrastructure.implementations.OpenCVPreprocessing
+import com.schloesser.masterthesis.infrastructure.implementations.SimpleGazeDetector
 import com.schloesser.masterthesis.presentation.extension.toBitmap
 import com.schloesser.masterthesis.presentation.extension.toMat
-import com.schloesser.masterthesis.presentation.video.base.Classifier
-import com.schloesser.masterthesis.presentation.video.implementations.*
-import org.opencv.core.Core
 import org.opencv.core.Mat
 import org.opencv.core.Point
 import org.opencv.core.Scalar
@@ -15,17 +16,16 @@ import org.opencv.imgproc.Imgproc
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
-class ProcessFrameTask(private val activity: Activity) {
+class ProcessFrameTask(context: Context) {
 
     private var isRunning = true
-    private val handler = Handler(activity.mainLooper)
     private val preprocessing = OpenCVPreprocessing()
-    private val faceDetector = OpenCVCascadeFaceDetector(activity)
+    private val faceDetector = OpenCVCascadeFaceDetector(context)
     private val gazeDetector = SimpleGazeDetector()
-    private val emotionClassifier = EmotionClassifier(activity, Classifier.Device.GPU, 1)
+    private val emotionClassifier = EmotionClassifier(context, Classifier.Device.GPU, 1)
 
     private val faceBuffer: ByteBuffer by lazy {
-//        val buffer = ByteBuffer.allocateDirect(1 * 48 * 48 * 4)
+        //        val buffer = ByteBuffer.allocateDirect(1 * 48 * 48 * 4)
         val buffer = ByteBuffer.allocateDirect(1 * 100 * 100 * 4)
         buffer.order(ByteOrder.nativeOrder())
         buffer
@@ -67,14 +67,12 @@ class ProcessFrameTask(private val activity: Activity) {
             Imgproc.rectangle(processedFrame, face.tl(), face.br(), Scalar(0.0, 255.0, 0.0, 255.0), 3)
         }
 
-        if(faceIndex != null) {
+        if (faceIndex != null) {
             val face = faces[faceIndex]
             Imgproc.putText(processedFrame, emotionLabel, Point(face.tl().x + 20, face.tl().y + 50), Imgproc.FONT_HERSHEY_SIMPLEX, 1.5, Scalar(255.0, 255.0, 255.0), 2)
         }
 
-        handler.post {
-            callback.onProcessFrameResults(faces.size, emotionLabel, processedFrame.toBitmap(), processedFace?.toBitmap())
-        }
+        callback.onProcessFrameResults(faces.size, emotionLabel, processedFrame.toBitmap(), processedFace?.toBitmap())
     }
 
     private fun fillFaceBuffer(face: Mat) {

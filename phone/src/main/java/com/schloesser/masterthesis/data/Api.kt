@@ -7,15 +7,12 @@ import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.http.*
 
-interface UserApi {
+interface Api {
 
     @POST("auth/")
     fun login(@Body request: LoginRequest): Call<AuthResponse>
 
-    @GET("user/record/")
-    fun getAllEmotionRecords(@Header("Authorization") token: String): Call<List<EmotionRecord>>
-
     @Multipart
-    @POST("face/")
-    fun sendFace(@Part file: MultipartBody.Part, @Header("Authorization") token: String): Call<String>
+    @POST("record/")
+    fun sendFrame(@Part file: MultipartBody.Part, @Part("session_id") sessionId: Int): Call<String>
 }

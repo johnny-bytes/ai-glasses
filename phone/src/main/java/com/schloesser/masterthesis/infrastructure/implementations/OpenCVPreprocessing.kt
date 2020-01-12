@@ -1,6 +1,6 @@
-package com.schloesser.masterthesis.presentation.video.implementations
+package com.schloesser.masterthesis.infrastructure.implementations
 
-import com.schloesser.masterthesis.presentation.video.base.Preprocessing
+import com.schloesser.masterthesis.infrastructure.base.Preprocessing
 import org.opencv.core.Mat
 import org.opencv.core.Rect
 import org.opencv.core.Size

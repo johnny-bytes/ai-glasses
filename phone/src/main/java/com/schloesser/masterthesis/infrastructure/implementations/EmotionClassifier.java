@@ -13,11 +13,12 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package com.schloesser.masterthesis.presentation.video.implementations;
+package com.schloesser.masterthesis.infrastructure.implementations;
 
 import android.app.Activity;
+import android.content.Context;
 
-import com.schloesser.masterthesis.presentation.video.base.Classifier;
+import com.schloesser.masterthesis.infrastructure.base.Classifier;
 
 import org.tensorflow.lite.support.common.TensorOperator;
 import org.tensorflow.lite.support.common.ops.NormalizeOp;
@@ -47,11 +48,11 @@ public class EmotionClassifier extends Classifier {
     /**
      * Initializes a {@code ClassifierFloatMobileNet}.
      *
-     * @param activity
+     * @param context
      */
-    public EmotionClassifier(Activity activity, Device device, int numThreads)
+    public EmotionClassifier(Context context, Device device, int numThreads)
             throws IOException {
-        super(activity, device, numThreads);
+        super(context, device, numThreads);
     }
 
     @Override

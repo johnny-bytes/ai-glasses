@@ -1,8 +1,9 @@
-package com.schloesser.masterthesis.presentation.video
+package com.schloesser.masterthesis.infrastructure
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import com.schloesser.masterthesis.presentation.video.VideoActivity
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
 import org.jetbrains.anko.doAsync
@@ -12,13 +13,13 @@ import java.lang.ref.WeakReference
 import java.net.Socket
 
 class ServerSocketThread @Throws(IOException::class)
-constructor(private val socket: Socket, activity: VideoActivity, private val callback: (Throwable) -> Unit) : Runnable {
+constructor(private val socket: Socket, service: ClassifierService, private val callback: (Throwable) -> Unit) : Runnable {
 
     companion object {
         private const val TAG = "ServerSocketThread"
     }
 
-    private val activity: WeakReference<VideoActivity> = WeakReference(activity)
+    private val service: WeakReference<ClassifierService> = WeakReference(service)
     private var inputStream: DataInputStream? = null
     private val bitmapOptions by lazy {
         val options = BitmapFactory.Options()
@@ -75,7 +76,7 @@ constructor(private val socket: Socket, activity: VideoActivity, private val cal
                 len += inputStream!!.read(buffer, len, imgLength - len)
             }
 
-            activity.get()?.lastFrame = BitmapFactory.decodeByteArray(buffer, 0, buffer.size, bitmapOptions)
+            service.get()?.lastFrame = BitmapFactory.decodeByteArray(buffer, 0, buffer.size, bitmapOptions)
         }
     }
 }

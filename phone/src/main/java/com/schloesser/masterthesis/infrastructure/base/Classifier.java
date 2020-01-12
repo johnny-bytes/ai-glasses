@@ -13,16 +13,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package com.schloesser.masterthesis.presentation.video.base;
+package com.schloesser.masterthesis.infrastructure.base;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.os.SystemClock;
 import android.os.Trace;
 import android.util.Log;
 
-import com.schloesser.masterthesis.presentation.video.implementations.EmotionClassifier;
+import com.schloesser.masterthesis.infrastructure.implementations.EmotionClassifier;
 
 import org.tensorflow.lite.DataType;
 import org.tensorflow.lite.Interpreter;
@@ -35,7 +36,6 @@ import org.tensorflow.lite.support.image.ImageProcessor;
 import org.tensorflow.lite.support.image.TensorImage;
 import org.tensorflow.lite.support.image.ops.ResizeOp;
 import org.tensorflow.lite.support.image.ops.ResizeOp.ResizeMethod;
-import org.tensorflow.lite.support.image.ops.ResizeWithCropOrPadOp;
 import org.tensorflow.lite.support.label.TensorLabel;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
@@ -229,8 +229,8 @@ public abstract class Classifier {
     /**
      * Initializes a {@code Classifier}.
      */
-    protected Classifier(Activity activity, Device device, int numThreads) throws IOException {
-        tfliteModel = FileUtil.loadMappedFile(activity, getModelPath());
+    protected Classifier(Context context, Device device, int numThreads) throws IOException {
+        tfliteModel = FileUtil.loadMappedFile(context, getModelPath());
         switch (device) {
             case NNAPI:
                 nnApiDelegate = new NnApiDelegate();
@@ -247,7 +247,7 @@ public abstract class Classifier {
         tflite = new Interpreter(tfliteModel, tfliteOptions);
 
         // Loads labels out from the label file.
-        labels = FileUtil.loadLabels(activity, getLabelPath());
+        labels = FileUtil.loadLabels(context, getLabelPath());
 
         // Reads type and shape of input and output tensors, respectively.
         int imageTensorIndex = 0;
