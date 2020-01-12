@@ -46,7 +46,7 @@ class VideoActivity : AppCompatActivity(), ProcessFrameTask.Callback {
         setContentView(R.layout.activity_video)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
-        txvIpAddress.text = wifiIpAddress()
+        txvIpAddress.text = "Server address: ${wifiIpAddress()}"
     }
 
     override fun onResume() {

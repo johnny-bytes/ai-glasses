@@ -1,6 +1,5 @@
 package com.schloesser.masterthesis.data
 
-import com.schloesser.masterthesis.data.repository.SessionRepository
 import com.schloesser.masterthesis.data.request.LoginRequest
 import com.schloesser.masterthesis.data.response.AuthResponse
 import com.schloesser.masterthesis.entity.EmotionRecord
@@ -10,10 +9,10 @@ import retrofit2.http.*
 
 interface UserApi {
 
-    @POST("auth/login")
+    @POST("auth/")
     fun login(@Body request: LoginRequest): Call<AuthResponse>
 
-    @GET("emotion_record/")
+    @GET("user/record/")
     fun getAllEmotionRecords(@Header("Authorization") token: String): Call<List<EmotionRecord>>
 
     @Multipart

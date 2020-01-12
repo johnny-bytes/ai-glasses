@@ -9,6 +9,6 @@ import retrofit2.http.Part
 interface EmotionRecordApi {
 
     @Multipart
-    @POST("emotion_record/")
+    @POST("record/")
     fun sendFrame(@Part file: MultipartBody.Part): Call<String>
 }

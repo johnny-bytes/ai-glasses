@@ -31,8 +31,8 @@ class LoginActivity : AppCompatActivity() {
         }
 
         if (BuildConfig.DEBUG) {
-            edtEmail.setText("timo@gmail.com")
-            edtPassword.setText("123456")
+            edtUsername.setText("timo")
+            edtPassword.setText("testpw")
         }
 
         btnPerformLogin.setOnClickListener {
@@ -41,7 +41,7 @@ class LoginActivity : AppCompatActivity() {
 
             ApiFactory.userApi.login(
                 LoginRequest(
-                    edtEmail.text.toString(),
+                    edtUsername.text.toString(),
                     edtPassword.text.toString()
                 )
             ).enqueue(object : Callback<AuthResponse> {
@@ -57,7 +57,7 @@ class LoginActivity : AppCompatActivity() {
                     loadingIndicator.gone()
 
                     if (response.code() == 200) {
-                        SessionRepository.token = response.body()?.token
+                        SessionRepository.token = response.body()?.token?.access
                         startActivity(Intent(this@LoginActivity, UserActivity::class.java))
                         finish()
                     } else {

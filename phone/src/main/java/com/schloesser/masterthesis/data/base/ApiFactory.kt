@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit
 
 object ApiFactory {
 
-//    private var BASE_URL = "http://timoschloesser.dynalias.org:5000/"
-    private var BASE_URL = "http://5.35.249.27:5005/"
+//    private var BASE_URL = "http://192.168.178.41:5005/"
+    private var BASE_URL = "https://ai-glass-api.happimeter.org/"
 
     private val moshi: Moshi by lazy {
         Moshi.Builder().build()

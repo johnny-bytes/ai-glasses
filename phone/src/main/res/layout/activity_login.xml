@@ -16,12 +16,12 @@
         android:textSize="22sp" />
 
     <EditText
-        android:id="@+id/edtEmail"
+        android:id="@+id/edtUsername"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
-        android:hint="E-Mail" />
+        android:hint="Username" />
 
     <EditText
         android:id="@+id/edtPassword"

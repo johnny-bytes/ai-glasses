@@ -79,7 +79,7 @@ class UserActivity : AppCompatActivity() {
         records.forEach {
             val item = inflater.inflate(R.layout.item_emotion_record, emotionRecordContainer, false)
             item.txvEmotion.text = it.data
-            item.txvDate.text = it.created_at?.replace("T", "  ")
+            item.txvDate.text = it.created?.replace("T", "  ")
             emotionRecordContainer.addView(item)
         }
     }
