@@ -94,7 +94,7 @@ class UploadFrameActivity : AppCompatActivity() {
 
         val body = getRequestBody(file)
 
-        ApiFactory.api.sendFrame(body, 1).enqueue(object : Callback<String> {
+        ApiFactory.getInstance(this).api.sendFrame(body, 1).enqueue(object : Callback<String> {
 
             override fun onFailure(call: Call<String>, t: Throwable) {
                 loadingIndicator.gone()
@@ -108,7 +108,12 @@ class UploadFrameActivity : AppCompatActivity() {
                 if(response.isSuccessful) {
                     txvResult.text = "Upload finished. (Code: %s)".format(response.code())
                 } else {
-                    txvResult.text = "Upload failed. (Code: %s)".format(response.code())
+                    txvResult.text = when(response.code()) {
+                        403 -> "Missing permission to upload frame."
+                        404 -> "Session Id not found."
+                        else -> "Upload failed. (Code: %s)".format(response.code())
+                    }
+
                 }
             }
         })

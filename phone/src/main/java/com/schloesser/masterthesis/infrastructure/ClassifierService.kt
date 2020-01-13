@@ -10,6 +10,7 @@ import android.os.Handler
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.schloesser.masterthesis.LauncherActivity
 import com.schloesser.masterthesis.R
 import com.schloesser.shared.wifidirect.SharedConstants
@@ -33,7 +34,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
     override fun onCreate() {
         super.onCreate()
         registerNotificationChannel()
-        sendBroadcast(Intent(ACTION_SERVICE_STARTED))
+        LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTION_SERVICE_STARTED))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -52,7 +53,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
     override fun onDestroy() {
         super.onDestroy()
         stopServer()
-        sendBroadcast(Intent(ACTION_SERVICE_STOPPED))
+        LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTION_SERVICE_STOPPED))
     }
 
     private fun startServer() {

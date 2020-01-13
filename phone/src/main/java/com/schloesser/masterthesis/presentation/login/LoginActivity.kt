@@ -25,7 +25,7 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        if(SessionRepository.token != null) {
+        if(SessionRepository.getInstance(this).hasSession()) {
             startActivity(Intent(this@LoginActivity, InternalActivity::class.java))
             finish()
         }
@@ -39,7 +39,7 @@ class LoginActivity : AppCompatActivity() {
             it.hideKeyboard()
             loadingIndicator.visible()
 
-            ApiFactory.api.login(
+            ApiFactory.getInstance(this).api.login(
                 LoginRequest(
                     edtUsername.text.toString(),
                     edtPassword.text.toString()
@@ -57,7 +57,8 @@ class LoginActivity : AppCompatActivity() {
                     loadingIndicator.gone()
 
                     if (response.code() == 200) {
-                        SessionRepository.token = response.body()?.token?.access
+                        SessionRepository.getInstance(this@LoginActivity).setAccessToken(response.body()?.token?.access!!)
+                        SessionRepository.getInstance(this@LoginActivity).setRefreshToken(response.body()?.token?.refresh!!)
                         startActivity(Intent(this@LoginActivity, InternalActivity::class.java))
                         finish()
                     } else {

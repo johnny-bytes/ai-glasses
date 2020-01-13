@@ -1,6 +1,7 @@
 package com.schloesser.masterthesis.presentation.internal
 
 import android.app.ActivityManager
+import android.app.LauncherActivity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -11,7 +12,9 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.schloesser.masterthesis.R
+import com.schloesser.masterthesis.data.base.AccessTokenAuthenticator
 import com.schloesser.masterthesis.data.repository.SessionRepository
 import com.schloesser.masterthesis.infrastructure.ClassifierService
 import com.schloesser.masterthesis.presentation.login.LoginActivity
@@ -29,6 +32,10 @@ import java.nio.ByteOrder
 
 class InternalActivity : AppCompatActivity() {
 
+    private val broadcastReceiver by lazy {
+        Receiver()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_internal)
@@ -36,16 +43,23 @@ class InternalActivity : AppCompatActivity() {
         val filter = IntentFilter().apply {
             addAction(ClassifierService.ACTION_SERVICE_STARTED)
             addAction(ClassifierService.ACTION_SERVICE_STOPPED)
+            addAction(AccessTokenAuthenticator.BROADCAST_PERFORM_LOGOUT)
         }
-        registerReceiver(Receiver(), filter)
 
-        if (SessionRepository.token == null) {
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, filter)
+
+        if (!SessionRepository.getInstance(this).hasSession()) {
             performLogout()
         } else {
             initOpenCV()
             startService()
             initLayout()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver)
     }
 
     private fun initOpenCV() {
@@ -86,7 +100,6 @@ class InternalActivity : AppCompatActivity() {
         }
 
         btnLogout.setOnClickListener {
-            SessionRepository.token = null
             performLogout()
         }
     }
@@ -99,14 +112,17 @@ class InternalActivity : AppCompatActivity() {
     }
 
     private fun performLogout() {
+        SessionRepository.getInstance(this).clearSession()
         stopService(Intent(this, ClassifierService::class.java))
-        startActivity(Intent(this, LoginActivity::class.java))
-        finish()
+        triggerRestart()
     }
 
     inner class Receiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            updateServiceControls(isServiceRunning())
+            when (intent.action) {
+                AccessTokenAuthenticator.BROADCAST_PERFORM_LOGOUT -> performLogout()
+                else -> updateServiceControls(isServiceRunning())
+            }
         }
     }
 
@@ -141,5 +157,12 @@ class InternalActivity : AppCompatActivity() {
         }
 
         return ipAddressString
+    }
+
+    private fun triggerRestart() {
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        startActivity(intent)
+        finish()
     }
 }

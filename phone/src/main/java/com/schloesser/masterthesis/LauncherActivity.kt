@@ -12,7 +12,7 @@ class LauncherActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if(SessionRepository.token != null) {
+        if(SessionRepository.getInstance(this).hasSession()) {
             startActivity(Intent(this, InternalActivity::class.java))
         } else {
             startActivity(Intent(this, LoginActivity::class.java))

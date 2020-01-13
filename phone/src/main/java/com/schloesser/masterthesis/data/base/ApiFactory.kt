@@ -1,8 +1,11 @@
 package com.schloesser.masterthesis.data.base
 
+import android.content.Context
 import com.itkacher.okhttpprofiler.OkHttpProfilerInterceptor
 import com.schloesser.masterthesis.BuildConfig
 import com.schloesser.masterthesis.data.Api
+import com.schloesser.masterthesis.data.base.AccessTokenAuthenticator.Companion.AUTHORIZATION_HEADER_NAME
+import com.schloesser.masterthesis.data.base.AccessTokenAuthenticator.Companion.getAuthorizationheader
 import com.schloesser.masterthesis.data.repository.SessionRepository
 import com.squareup.moshi.Moshi
 import okhttp3.Interceptor
@@ -11,12 +14,13 @@ import okhttp3.Request
 import okhttp3.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import java.util.concurrent.TimeUnit
 
-object ApiFactory {
+class ApiFactory private constructor(private val context: Context) {
 
-    //    private var BASE_URL = "http://192.168.178.41:5005/"
-    private var BASE_URL = "https://ai-glass-api.happimeter.org/"
+    companion object : SingletonHolder<ApiFactory, Context>(::ApiFactory) {
+        const val BASE_URL = "http://192.168.178.41:5005/"
+//        const val BASE_URL = "https://ai-glass-api.happimeter.org/"
+    }
 
     private val moshi: Moshi by lazy {
         Moshi.Builder().build()
@@ -25,9 +29,7 @@ object ApiFactory {
     private val okHttpClient: OkHttpClient by lazy {
         val builder = OkHttpClient.Builder()
 
-        builder.connectTimeout(20, TimeUnit.SECONDS)
-        builder.callTimeout(20, TimeUnit.SECONDS)
-        builder.readTimeout(20, TimeUnit.SECONDS)
+        builder.authenticator(AccessTokenAuthenticator(context))
         builder.addInterceptor(HeaderInterceptor())
 
         if (BuildConfig.DEBUG) {
@@ -49,15 +51,15 @@ object ApiFactory {
         retrofit.create(Api::class.java)
     }
 
-    private class HeaderInterceptor : Interceptor {
+    private inner class HeaderInterceptor : Interceptor {
 
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
             val builder: Request.Builder = request.newBuilder()
-            val accessToken = SessionRepository.token
+            val accessToken = SessionRepository.getInstance(context).getAccessToken()
 
             if (accessToken != null) {
-                builder.header("Authorization", "Bearer %s".format(accessToken));
+                builder.header(AUTHORIZATION_HEADER_NAME, getAuthorizationheader(accessToken))
             }
 
             return chain.proceed(builder.build())
