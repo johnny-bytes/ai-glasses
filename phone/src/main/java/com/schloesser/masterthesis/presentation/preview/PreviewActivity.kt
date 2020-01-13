@@ -54,7 +54,7 @@ open class PreviewActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
         Intent(this, ClassifierService::class.java).also { intent ->
-            bindService(intent, connection, Context.BIND_AUTO_CREATE)
+            bindService(intent, connection, 0)
         }
     }
 

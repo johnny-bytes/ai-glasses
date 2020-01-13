@@ -23,7 +23,13 @@ import java.net.Socket
 import java.net.SocketAddress
 import java.net.SocketException
 
-class ClientSocketThread(private val cameraPreview: CameraPreview, private val context: Context, private val handler: Handler, private val callback: Callback) : Runnable {
+class ClientSocketThread(
+    private val socket: Socket,
+    private val cameraPreview: CameraPreview,
+    private val context: Context,
+    private val handler: Handler,
+    private val callback: Callback
+) : Runnable {
 
     // TODO: refactor threading: currently new threads are launched when connection to host fails
 
@@ -32,6 +38,7 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
     }
 
     private var settingsRepository = SettingsRepository(context)
+
     private var outputStream: OutputStream? = null
     private var inputStream: DataInputStream? = null
 
@@ -42,9 +49,9 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
     private fun connectToServer() {
         GlobalScope.launch {
             try {
-                val socket = Socket()
                 socket.connect(InetSocketAddress(settingsRepository.getServerAddress(), SharedConstants.SERVERPORT), 3000)
                 socket.keepAlive = true
+
                 outputStream = socket.getOutputStream()
                 inputStream = DataInputStream(socket.getInputStream())
 
@@ -93,6 +100,12 @@ class ClientSocketThread(private val cameraPreview: CameraPreview, private val c
     private fun startLooper() {
         try {
             while (true) {
+                if(Thread.currentThread().isInterrupted) {
+                    socket?.close()
+                    outputStream?.close()
+                    inputStream?.close()
+                }
+
                 if (outputStream != null
                     && cameraPreview.frameBuffer != null
                     && cameraPreview.frameBuffer!!.size() > 0

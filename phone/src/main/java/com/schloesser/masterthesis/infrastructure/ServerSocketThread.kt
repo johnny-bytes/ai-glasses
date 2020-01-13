@@ -10,9 +10,13 @@ import java.io.DataInputStream
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.net.Socket
+import java.net.SocketException
 
 class ServerSocketThread @Throws(IOException::class)
-constructor(private val socket: Socket, service: ClassifierService, private val callback: (Throwable) -> Unit) : Runnable {
+constructor(
+    private val socket: Socket, service: ClassifierService,
+    private val callback: (Throwable) -> Unit
+) : Runnable {
 
     companion object {
         private const val TAG = "ServerSocketThread"
@@ -40,6 +44,7 @@ constructor(private val socket: Socket, service: ClassifierService, private val 
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
+                callback(e)
             }
         }
     }
@@ -47,16 +52,18 @@ constructor(private val socket: Socket, service: ClassifierService, private val 
     private fun startLooper() {
         try {
             while (!Thread.currentThread().isInterrupted) {
-                if (inputStream != null) readInputStream()
+                if (inputStream != null) {
+                    readInputStream()
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
-//            callback(e)
-/*            try {
+            callback(e)
+            try {
                 inputStream?.close()
             } catch (e2: Exception) {
                 e.printStackTrace()
-            }*/
+            }
         }
     }
 

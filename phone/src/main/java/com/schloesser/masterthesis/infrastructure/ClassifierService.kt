@@ -4,10 +4,7 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.os.Binder
-import android.os.Build
-import android.os.Handler
-import android.os.IBinder
+import android.os.*
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -37,11 +34,17 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
         LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTION_SERVICE_STARTED))
     }
 
+    private var sessionId: Int? = -1
+    private var sessionName: String? = null
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action.equals(ACTION_STOP_SERVICE)) {
             stopSelf()
             NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID)
         } else {
+            sessionId = intent?.getIntExtra("sessionId", -1)
+            sessionName = intent?.getStringExtra("sessionName")
+
             startForeground(NOTIFICATION_ID, getDefaultNotification())
             startServer()
         }
@@ -70,6 +73,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
     private var socket: Socket? = null
 
     private fun stopServer() {
+        isServerRunning = false
         if (socketThread != null) socketThread!!.interrupt()
         if (socket != null) socket!!.close()
         if (serverSocket != null) serverSocket!!.close()
@@ -86,10 +90,12 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
         @Synchronized set
 
     private fun initServerSocket() {
+        updateNotification("Connecting...")
         doAsync {
             try {
                 serverSocket = ServerSocket(SharedConstants.SERVERPORT)
                 socket = serverSocket!!.accept()
+                socket?.keepAlive = true
 
                 try {
                     outputStream = DataOutputStream(socket!!.getOutputStream())
@@ -97,7 +103,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
                     e.printStackTrace()
                 }
 
-                updateNotification("Connected to: " + socket!!.inetAddress.toString().removePrefix("/"))
+                updateNotification("Connected to " + socket!!.inetAddress.toString().removePrefix("/"))
 
                 socketThread = Thread(ServerSocketThread(socket!!, this@ClassifierService) { _ ->
                     updateNotification("Connection lost")
@@ -128,7 +134,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
                     lastFrame = null // Set null to avoid multiple processing
                 }
             } finally {
-                Handler().post(this)
+                Handler(Looper.getMainLooper()).post(this)
             }
         }
     }
@@ -181,7 +187,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
 
         notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Vuzix Blade Service")
-            .setContentText("Waiting for connection...")
+            .setStyle(getNotificationText("Starting..."))
             .setSmallIcon(R.drawable.ic_service_notification)
             .setContentIntent(pendingIntent)
             .addAction(R.drawable.ic_close, "Stop Service", stopActionPendingIntent)
@@ -189,9 +195,18 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
         return notificationBuilder.build()
     }
 
-    private fun updateNotification(text: String) {
-        notificationBuilder.setContentText(text)
+    private fun updateNotification(message: String) {
+        notificationBuilder
+            .setContentText(message + sessionName)
+            .setStyle(getNotificationText(message))
+
         NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notificationBuilder.build())
+    }
+
+    private fun getNotificationText(message: String): NotificationCompat.BigTextStyle {
+        val serviceStatus = "Status: %s".format(message)
+        val session = "Session: %s".format(sessionName)
+        return NotificationCompat.BigTextStyle().bigText(serviceStatus + "\n" + session)
     }
 
     private val binder = LocalBinder()

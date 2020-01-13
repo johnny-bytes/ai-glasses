@@ -3,4 +3,8 @@
     <color name="colorPrimary">#8e1011</color>
     <color name="colorPrimaryDark">#5b0000</color>
     <color name="colorAccent">#c54738</color>
+
+    <color name="white">#fff</color>
+    <color name="whitePressed">#f5f5f5</color>
+
 </resources>

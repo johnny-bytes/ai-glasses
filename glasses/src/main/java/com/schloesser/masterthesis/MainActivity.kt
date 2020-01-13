@@ -20,6 +20,7 @@ import com.vuzix.hud.actionmenu.ActionMenuActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.newFixedThreadPoolContext
 import pub.devrel.easypermissions.EasyPermissions
+import java.net.Socket
 import java.util.*
 
 
@@ -48,6 +49,7 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         camera
     }
 
+    private var socket = Socket()
     private var preview: CameraPreview? = null
     private var thread: Thread? = null
 
@@ -60,7 +62,7 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
             preview = CameraPreview(this, camera!!)
             previewContainer.addView(preview)
 
-            thread = Thread(ClientSocketThread(preview!!, this, Handler(), this))
+            thread = Thread(ClientSocketThread(socket, preview!!, this, Handler(), this))
             thread?.start()
 
         } else {
@@ -100,6 +102,7 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
 
     override fun onDestroy() {
         super.onDestroy()
+        socket.close()
         thread?.interrupt()
     }
 

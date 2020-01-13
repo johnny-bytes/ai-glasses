@@ -1,7 +1,6 @@
 package com.schloesser.masterthesis.presentation.internal
 
 import android.app.ActivityManager
-import android.app.LauncherActivity
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -19,6 +18,7 @@ import com.schloesser.masterthesis.data.repository.SessionRepository
 import com.schloesser.masterthesis.infrastructure.ClassifierService
 import com.schloesser.masterthesis.presentation.login.LoginActivity
 import com.schloesser.masterthesis.presentation.preview.PreviewActivity
+import com.schloesser.masterthesis.presentation.selectSession.SelectSessionDialog
 import com.schloesser.masterthesis.presentation.uploadFrame.UploadFrameActivity
 import kotlinx.android.synthetic.main.activity_internal.*
 import org.opencv.android.InstallCallbackInterface
@@ -52,7 +52,6 @@ class InternalActivity : AppCompatActivity() {
             performLogout()
         } else {
             initOpenCV()
-            startService()
             initLayout()
         }
     }
@@ -77,7 +76,12 @@ class InternalActivity : AppCompatActivity() {
     }
 
     private fun startService() {
-        ContextCompat.startForegroundService(this, Intent(this, ClassifierService::class.java))
+        SelectSessionDialog { session ->
+            val intent = Intent(this, ClassifierService::class.java)
+            intent.putExtra("sessionId", session.id)
+            intent.putExtra("sessionName", session.name)
+            ContextCompat.startForegroundService(this, intent)
+        }.display(supportFragmentManager)
     }
 
     private fun stopService() {
@@ -86,7 +90,7 @@ class InternalActivity : AppCompatActivity() {
 
     private fun initLayout() {
         initButtons()
-        updateServiceControls(true)
+        updateServiceControls(false)
         txvHostIp.text = "Host IP: %s".format(wifiIpAddress())
     }
 
