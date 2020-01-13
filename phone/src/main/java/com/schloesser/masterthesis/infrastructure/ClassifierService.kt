@@ -26,22 +26,24 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
         const val NOTIFICATION_ID = 1
         const val NOTIFICATION_CHANNEL_ID = "ai-glasses-notifications"
         const val ACTION_STOP_SERVICE = "stop-service"
+        const val ACTION_SERVICE_STARTED = "service-started"
+        const val ACTION_SERVICE_STOPPED = "service-stopped"
     }
 
     override fun onCreate() {
         super.onCreate()
         registerNotificationChannel()
+        sendBroadcast(Intent(ACTION_SERVICE_STARTED))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent?.action.equals(ACTION_STOP_SERVICE)) {
+            stopSelf()
             NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID)
-            stopSelf();
         } else {
             startForeground(NOTIFICATION_ID, getDefaultNotification())
+            startServer()
         }
-
-        startServer()
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -50,6 +52,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
     override fun onDestroy() {
         super.onDestroy()
         stopServer()
+        sendBroadcast(Intent(ACTION_SERVICE_STOPPED))
     }
 
     private fun startServer() {
@@ -93,12 +96,13 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
                     e.printStackTrace()
                 }
 
-                updateNotification("Connected to:" + socket!!.inetAddress.toString())
+                updateNotification("Connected to: " + socket!!.inetAddress.toString().removePrefix("/"))
 
                 socketThread = Thread(ServerSocketThread(socket!!, this@ClassifierService) { _ ->
                     updateNotification("Connection lost")
-                    lastProcessedFrame = null
                     lastFrame = null
+                    lastProcessedFrame = null
+                    lastFace = null
 
                     stopServer()
                     startServer()
@@ -131,7 +135,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
     override fun onProcessFrameResults(faceCount: Int, emotionLabel: String, frame: Bitmap, processedCenterFace: Bitmap?) {
         sendProcessingResults(faceCount, emotionLabel)
         lastProcessedFrame = frame
-        lastFrame = processedCenterFace
+        lastFace = processedCenterFace
     }
 
     private fun sendProcessingResults(faceCount: Int, emotionLabel: String) {
@@ -176,7 +180,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
 
         notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Vuzix Blade Service")
-            .setContentText("Starting...")
+            .setContentText("Waiting for connection...")
             .setSmallIcon(R.drawable.ic_service_notification)
             .setContentIntent(pendingIntent)
             .addAction(R.drawable.ic_close, "Stop Service", stopActionPendingIntent)

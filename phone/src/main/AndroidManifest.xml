@@ -56,7 +56,7 @@
             android:screenOrientation="portrait" />
 
         <activity
-            android:name=".presentation.video.VideoActivity"
+            android:name=".presentation.preview.PreviewActivity"
             android:launchMode="singleInstance"
             android:screenOrientation="portrait" />
 

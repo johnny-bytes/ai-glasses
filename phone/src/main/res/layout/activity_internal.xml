@@ -9,19 +9,28 @@
     android:paddingBottom="20dp">
 
     <Button
-        android:id="@+id/btnUploadFrame"
+        android:id="@+id/btnService"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Manual Frame Upload" />
+        android:text="Service" />
 
     <Button
         android:id="@+id/btnPreview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
-        android:layout_below="@id/btnUploadFrame"
+        android:layout_below="@id/btnService"
         android:text="Preview" />
+
+
+    <Button
+        android:id="@+id/btnUploadFrame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:text="Manual Frame Upload"
+        android:layout_below="@id/btnPreview" />
 
     <Button
         android:id="@+id/btnLogout"
@@ -29,7 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:text="Logout"
-        android:layout_below="@id/btnPreview" />
+        android:layout_below="@id/btnUploadFrame" />
 
     <TextView
         android:id="@+id/txvHostIp"

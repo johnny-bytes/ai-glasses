@@ -3,7 +3,6 @@ package com.schloesser.masterthesis.infrastructure
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
-import com.schloesser.masterthesis.presentation.video.VideoActivity
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
 import org.jetbrains.anko.doAsync

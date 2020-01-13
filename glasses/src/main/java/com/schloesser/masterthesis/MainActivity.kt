@@ -78,14 +78,13 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         txvFaceCount.text = "Found $count faces."
     }
 
-    private val emotionLabels = LimitedQueue<String>(10)
+    private val emotionLabels = LimitedQueue<String>(3)
 
     override fun onEmotionChanged(emotion: String) {
         if(emotion.isNotBlank()) emotionLabels.add(emotion)
 
         txvEmotion.text = getMedianEmotionLabel()
     }
-
 
     private fun getMedianEmotionLabel() : String {
         var result = ""
