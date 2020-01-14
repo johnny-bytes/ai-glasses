@@ -7,6 +7,7 @@ import android.annotation.SuppressLint
 import android.hardware.Camera
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.WindowManager
 import android.widget.Toast
 import com.vuzix.hud.actionmenu.ActionMenuActivity
@@ -36,6 +37,7 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         try {
             camera = Camera.open()
         } catch (e: Exception) {
+            Log.d("#BUG", e.message ?: "")
             e.printStackTrace()
         }
         camera
@@ -49,8 +51,8 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         if (EasyPermissions.hasPermissions(this, Manifest.permission.CAMERA)) {
             if (camera == null) {
                 Toast.makeText(this, "Could not access camera.", Toast.LENGTH_LONG).show()
+                Log.d("#BUG", "camera == null")
             }
-
             cameraPreview = CameraPreview(this, camera!!)
             previewContainer.addView(cameraPreview)
 
@@ -108,8 +110,8 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         return result
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onStop() {
+        super.onStop()
         thread?.interrupt()
         clientSocketThread?.stop()
     }

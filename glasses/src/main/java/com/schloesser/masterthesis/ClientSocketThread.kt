@@ -7,20 +7,16 @@ import android.system.ErrnoException
 import android.util.Log
 import android.view.WindowManager
 import android.widget.EditText
-import androidx.core.view.ViewCompat
 import com.schloesser.shared.wifidirect.SharedConstants
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.TARGET_FPS
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.DataInputStream
 import java.io.DataOutputStream
-import java.io.IOException
 import java.io.OutputStream
 import java.net.InetSocketAddress
 import java.net.Socket
-import java.net.SocketAddress
 import java.net.SocketException
 
 class ClientSocketThread(
@@ -36,8 +32,8 @@ class ClientSocketThread(
         private const val TAG = "ClientSocketThread"
     }
 
+    private var socket: Socket? = null
     private var settingsRepository = SettingsRepository(context)
-
     private var outputStream: OutputStream? = null
     private var inputStream: DataInputStream? = null
 
@@ -48,25 +44,31 @@ class ClientSocketThread(
     private var shouldRun = true
 
     fun stop() {
-        cameraPreview.frameBuffer = null
         shouldRun = false
+        cameraPreview.frameBuffer = null
+        socket?.close()
     }
 
     private fun connectToServer() {
+        Log.d("#BUG", "connectToServer")
         GlobalScope.launch {
             try {
-                val socket = Socket()
-                socket.connect(InetSocketAddress(settingsRepository.getServerAddress(), SharedConstants.SERVERPORT), 3000)
-                socket.keepAlive = true
+                Log.d("#BUG", "connectToServer2")
+                socket = Socket()
+                socket?.connect(InetSocketAddress(settingsRepository.getServerAddress(), SharedConstants.SERVERPORT), 3000)
+                socket?.keepAlive = true
 
-                outputStream = socket.getOutputStream()
-                inputStream = DataInputStream(socket.getInputStream())
+                outputStream = socket?.getOutputStream()
+                inputStream = DataInputStream(socket?.getInputStream())
 
                 if (outputStream != null) {
                     startLooper()
+                } else {
+                    Log.d("#BUG", "outputStream == null")
                 }
 
-            } catch (e: IOException) {
+            } catch (e: Exception) {
+                Log.d("#BUG", e.message ?: "")
                 e.printStackTrace()
                 showConnectionRetryDialog()
             }
@@ -105,6 +107,7 @@ class ClientSocketThread(
     }
 
     private fun startLooper() {
+        Log.d("#BUG", "startLooper")
         try {
             while (shouldRun) {
 /*                if(Thread.currentThread().isInterrupted) {
@@ -112,9 +115,9 @@ class ClientSocketThread(
                     outputStream?.close()
                     inputStream?.close()
                 }*/
+                Log.d("#BUG", "while loop")
 
-                if (outputStream != null
-                    && cameraPreview.frameBuffer != null
+                if (cameraPreview.frameBuffer != null
                     && cameraPreview.frameBuffer!!.size() > 0
                 ) {
                     val dos = DataOutputStream(outputStream)
@@ -130,33 +133,41 @@ class ClientSocketThread(
                     dos.write(cameraPreview.frameBuffer!!.toByteArray())
                     dos.flush()
 
-                    Thread.sleep((1000 / TARGET_FPS).toLong())
-                }
+//                    Thread.sleep((1000 / TARGET_FPS).toLong())
 
-                try {
-                    if (inputStream != null) {
-                        if (inputStream!!.readUTF() == HEADER_START) {
+                    try {
+                        if (inputStream != null) {
+                            if (inputStream!!.readUTF() == HEADER_START) {
 
-                            val faceCount = inputStream!!.readInt()
-                            handler.post { callback.onFaceCountChanged(faceCount)}
+                                val faceCount = inputStream!!.readInt()
+                                handler.post { callback.onFaceCountChanged(faceCount) }
 
-                            val emotion = inputStream!!.readUTF()
-                            val confidence = inputStream!!.readFloat()
-                            handler.post { callback.onEmotionChanged(emotion, confidence)}
+                                val emotion = inputStream!!.readUTF()
+                                val confidence = inputStream!!.readFloat()
+                                handler.post { callback.onEmotionChanged(emotion, confidence) }
 
-                            if (inputStream!!.readUTF() != HEADER_END) {
-                                Log.d(TAG, "Header End Tag not present.")
+                                if (inputStream!!.readUTF() != HEADER_END) {
+                                    Log.d(TAG, "Header End Tag not present.")
+                                }
                             }
+                        } else {
+                            Log.d(TAG, "inputStream == null")
                         }
+
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Log.d("#BUG", e.message ?: "no")
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
+                } else {
+                    Log.d("#BUG", "no data")
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            Log.d("#BUG", e.message ?: "no")
 
-            try {
+
+/*            try {
                 outputStream?.close()
             } catch (e2: Exception) {
                 e.printStackTrace()
@@ -166,7 +177,7 @@ class ClientSocketThread(
                 inputStream?.close()
             } catch (e2: Exception) {
                 e.printStackTrace()
-            }
+            }*/
 
             if (e is SocketException || e is ErrnoException) {
                 showConnectionRetryDialog()
