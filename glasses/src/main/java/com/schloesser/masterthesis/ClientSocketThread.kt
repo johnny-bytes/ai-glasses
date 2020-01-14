@@ -24,7 +24,6 @@ import java.net.SocketAddress
 import java.net.SocketException
 
 class ClientSocketThread(
-    private val socket: Socket,
     private val cameraPreview: CameraPreview,
     private val context: Context,
     private val handler: Handler,
@@ -44,6 +43,13 @@ class ClientSocketThread(
 
     override fun run() {
         connectToServer()
+    }
+
+    private var shouldRun = true
+
+    fun stop() {
+        cameraPreview.frameBuffer = null
+        shouldRun = false
     }
 
     private fun connectToServer() {
@@ -100,7 +106,7 @@ class ClientSocketThread(
 
     private fun startLooper() {
         try {
-            while (true) {
+            while (shouldRun) {
 /*                if(Thread.currentThread().isInterrupted) {
                     socket?.close()
                     outputStream?.close()
@@ -133,7 +139,8 @@ class ClientSocketThread(
                             handler.post { callback.onFaceCountChanged(faceCount)}
 
                             val emotion = inputStream!!.readUTF()
-                            handler.post { callback.onEmotionChanged(emotion)}
+                            val confidence = inputStream!!.readFloat()
+                            handler.post { callback.onEmotionChanged(emotion, confidence)}
 
                             if (inputStream!!.readUTF() != HEADER_END) {
                                 Log.d(TAG, "Header End Tag not present.")
@@ -167,6 +174,6 @@ class ClientSocketThread(
 
     interface Callback {
         fun onFaceCountChanged(count: Int)
-        fun onEmotionChanged(emotion: String)
+        fun onEmotionChanged(emotion: String, confidence: Float)
     }
 }

@@ -67,6 +67,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
         }
     }
 
+    private var serverRunnable: ServerRunnable? = null
     private var socketThread: Thread? = null
     private var outputStream: DataOutputStream? = null
     private var serverSocket: ServerSocket? = null
@@ -74,9 +75,9 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
 
     private fun stopServer() {
 //        isServerRunning = false
-        if (socketThread != null) socketThread!!.interrupt()
-        if (socket != null) socket!!.close()
-        if (serverSocket != null) serverSocket!!.close()
+        socketThread?.interrupt()
+        socket?.close()
+        serverSocket?.close()
         processFrameTask.stop()
     }
 
@@ -105,7 +106,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
 
                 updateNotification("Connected to " + socket!!.inetAddress.toString().removePrefix("/"))
 
-                socketThread = Thread(ServerSocketThread(socket!!, this@ClassifierService) { _ ->
+                serverRunnable = ServerRunnable(socket!!, this@ClassifierService) { _ ->
                     updateNotification("Connection lost")
                     lastFrame = null
                     lastProcessedFrame = null
@@ -113,7 +114,9 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
 
                     stopServer()
                     startServer()
-                })
+                }
+
+                socketThread = Thread(serverRunnable)
                 socketThread!!.start()
 
             } catch (e: Exception) {
@@ -139,18 +142,19 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
         }
     }
 
-    override fun onProcessFrameResults(faceCount: Int, emotionLabel: String, frame: Bitmap, processedCenterFace: Bitmap?) {
-        sendProcessingResults(faceCount, emotionLabel)
+    override fun onProcessFrameResults(faceCount: Int, emotionLabel: String, labelConfidence: Float, frame: Bitmap, processedCenterFace: Bitmap?) {
+        sendProcessingResults(faceCount, emotionLabel, labelConfidence)
         lastProcessedFrame = frame
         lastFace = processedCenterFace
     }
 
-    private fun sendProcessingResults(faceCount: Int, emotionLabel: String) {
+    private fun sendProcessingResults(faceCount: Int, emotionLabel: String, labelConfidence: Float) {
         doAsync {
             try {
                 outputStream!!.writeUTF(SharedConstants.HEADER_START)
                 outputStream!!.writeInt(faceCount)
                 outputStream!!.writeUTF(emotionLabel)
+                outputStream!!.writeFloat(labelConfidence)
                 outputStream!!.writeUTF(SharedConstants.HEADER_END)
                 outputStream!!.flush()
             } catch (e: IOException) {

@@ -39,6 +39,7 @@ class ProcessFrameTask(context: Context) {
         if (!isRunning) return
 
         var emotionLabel = ""
+        var labelConfidence = -1.0f
         var processedFace: Mat? = null
         var faceIndex: Int? = null
 
@@ -56,9 +57,11 @@ class ProcessFrameTask(context: Context) {
 
                 val results = emotionClassifier.recognizeImage(faceBuffer, 0)
                 emotionLabel = results[0].title
+                labelConfidence = results[0].confidence
             }
         } else {
             emotionLabel = ""
+            labelConfidence = -1.0f
             processedFace = null
             faceIndex = null
         }
@@ -72,7 +75,7 @@ class ProcessFrameTask(context: Context) {
             Imgproc.putText(processedFrame, emotionLabel, Point(face.tl().x + 20, face.tl().y + 50), Imgproc.FONT_HERSHEY_SIMPLEX, 1.5, Scalar(255.0, 255.0, 255.0), 2)
         }
 
-        callback.onProcessFrameResults(faces.size, emotionLabel, processedFrame.toBitmap(), processedFace?.toBitmap())
+        callback.onProcessFrameResults(faces.size, emotionLabel, labelConfidence, processedFrame.toBitmap(), processedFace?.toBitmap())
     }
 
     private fun fillFaceBuffer(face: Mat) {
@@ -88,6 +91,6 @@ class ProcessFrameTask(context: Context) {
 
     interface Callback {
         // Always called on main thread
-        fun onProcessFrameResults(faceCount: Int, emotionLabel: String, processedFrame: Bitmap, processedCenterFace: Bitmap?)
+        fun onProcessFrameResults(faceCount: Int, emotionLabel: String, labelConfidence: Float, processedFrame: Bitmap, processedCenterFace: Bitmap?)
     }
 }

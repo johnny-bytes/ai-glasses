@@ -4,24 +4,16 @@ package com.schloesser.masterthesis
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.hardware.Camera
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
 import android.view.WindowManager
 import android.widget.Toast
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.BROADCAST_FACE_COUNT
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.PARAM_FACE_COUNT
 import com.vuzix.hud.actionmenu.ActionMenuActivity
 import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.newFixedThreadPoolContext
 import pub.devrel.easypermissions.EasyPermissions
-import java.net.Socket
 import java.util.*
+import kotlin.math.roundToInt
 
 
 class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
@@ -49,20 +41,21 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         camera
     }
 
-    private var socket = Socket()
-    private var preview: CameraPreview? = null
+    private var cameraPreview: CameraPreview? = null
+    private var clientSocketThread: ClientSocketThread? = null
     private var thread: Thread? = null
 
     private fun startVideoStreaming() {
         if (EasyPermissions.hasPermissions(this, Manifest.permission.CAMERA)) {
-            if(camera == null) {
+            if (camera == null) {
                 Toast.makeText(this, "Could not access camera.", Toast.LENGTH_LONG).show()
             }
 
-            preview = CameraPreview(this, camera!!)
-            previewContainer.addView(preview)
+            cameraPreview = CameraPreview(this, camera!!)
+            previewContainer.addView(cameraPreview)
 
-            thread = Thread(ClientSocketThread(socket, preview!!, this, Handler(), this))
+            clientSocketThread = ClientSocketThread(cameraPreview!!, this, Handler(), this)
+            thread = Thread(clientSocketThread)
             thread?.start()
 
         } else {
@@ -75,25 +68,40 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         }
     }
 
-    @SuppressLint("SetTextI18n")
     override fun onFaceCountChanged(count: Int) {
-        txvFaceCount.text = "Found $count faces."
+        txvFaceCount.text = when(count) {
+            0 -> "No faces detected"
+            1 -> "Detected 1 face"
+            else -> "Detected $count faces"
+        }
+
+        if (count == 0) txvEmotion.text = ""
     }
 
     private val emotionLabels = LimitedQueue<String>(3)
 
-    override fun onEmotionChanged(emotion: String) {
-        if(emotion.isNotBlank()) emotionLabels.add(emotion)
+    override fun onEmotionChanged(emotion: String, confidence: Float) {
+        if(emotion.isNotBlank()) {
+            emotionLabels.add(emotion)
+        }
 
         txvEmotion.text = getMedianEmotionLabel()
+
+        if (emotion.isBlank() || confidence < 0) {
+            txvEmotion.text = ""
+        } else {
+//            txvEmotion.text = "${emotion}: ${(confidence * 100f).roundToInt()}%"
+            txvEmotion.text = getMedianEmotionLabel()
+        }
     }
 
-    private fun getMedianEmotionLabel() : String {
+    private fun getMedianEmotionLabel(): String {
         var result = ""
 
-        if(emotionLabels.isNotEmpty()) {
+        if (emotionLabels.isNotEmpty()) {
             val grouped = emotionLabels.groupBy { it }
-            val sorted = grouped.toList().sortedByDescending { (_, value) -> value.size}
+            val sorted = grouped.toList().sortedByDescending { (_, value) -> value.size }
+
             result = sorted[0].first
         }
 
@@ -102,8 +110,8 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
 
     override fun onDestroy() {
         super.onDestroy()
-        socket.close()
         thread?.interrupt()
+        clientSocketThread?.stop()
     }
 
     override fun onRequestPermissionsResult(

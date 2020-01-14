@@ -2,17 +2,20 @@ package com.schloesser.masterthesis.infrastructure
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
+import kotlinx.coroutines.delay
 import org.jetbrains.anko.doAsync
 import java.io.DataInputStream
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.net.Socket
-import java.net.SocketException
+import java.net.SocketTimeoutException
 
-class ServerSocketThread @Throws(IOException::class)
+class ServerRunnable @Throws(IOException::class)
 constructor(
     private val socket: Socket, service: ClassifierService,
     private val callback: (Throwable) -> Unit
@@ -22,6 +25,7 @@ constructor(
         private const val TAG = "ServerSocketThread"
     }
 
+    private var shouldRun = true
     private val service: WeakReference<ClassifierService> = WeakReference(service)
     private var inputStream: DataInputStream? = null
     private val bitmapOptions by lazy {
@@ -31,7 +35,12 @@ constructor(
     }
 
     override fun run() {
+        statusCheckRunnable.run()
         connectToClient()
+    }
+
+    fun stop() {
+        shouldRun = false
     }
 
     private fun connectToClient() {
@@ -51,7 +60,8 @@ constructor(
 
     private fun startLooper() {
         try {
-            while (!Thread.currentThread().isInterrupted) {
+            while (true) {
+
                 if (inputStream != null) {
                     readInputStream()
                 }
@@ -59,16 +69,15 @@ constructor(
         } catch (e: Exception) {
             e.printStackTrace()
             callback(e)
-//            try {
-//                inputStream?.close()
-//            } catch (e2: Exception) {
-//                e.printStackTrace()
-//            }
         }
     }
 
+    private var lastSocketRead: Long = 0
+
     private fun readInputStream() {
         if (inputStream!!.readUTF() == HEADER_START) {
+
+            lastSocketRead = System.currentTimeMillis()
 
             val imgLength = inputStream!!.readInt()
 
@@ -83,6 +92,20 @@ constructor(
             }
 
             service.get()?.lastFrame = BitmapFactory.decodeByteArray(buffer, 0, buffer.size, bitmapOptions)
+        }
+    }
+
+    private val statusCheckRunnable = object : Runnable {
+        override fun run() {
+            try {
+                if(lastSocketRead > 0 && System.currentTimeMillis() - lastSocketRead > 3000 ) {
+                    stop()
+                    callback(SocketTimeoutException())
+                }
+            } finally {
+                if (shouldRun)
+                    Handler(Looper.getMainLooper()).postDelayed(this, 1000)
+            }
         }
     }
 }
