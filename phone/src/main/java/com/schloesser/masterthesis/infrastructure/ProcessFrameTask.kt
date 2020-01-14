@@ -18,7 +18,6 @@ import java.nio.ByteOrder
 
 class ProcessFrameTask(context: Context) {
 
-    private var isRunning = true
     private val preprocessing = OpenCVPreprocessing()
     private val faceDetector = OpenCVCascadeFaceDetector(context)
     private val gazeDetector = SimpleGazeDetector()
@@ -31,13 +30,7 @@ class ProcessFrameTask(context: Context) {
         buffer
     }
 
-    fun stop() {
-        isRunning = false
-    }
-
     fun run(frame: Bitmap, callback: Callback) {
-        if (!isRunning) return
-
         var emotionLabel = ""
         var labelConfidence = -1.0f
         var processedFace: Mat? = null

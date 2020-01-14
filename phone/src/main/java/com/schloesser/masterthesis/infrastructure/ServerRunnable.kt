@@ -23,6 +23,7 @@ constructor(
 
     companion object {
         private const val TAG = "ServerSocketThread"
+        private const val READ_TIMEOUT = 3000;
     }
 
     private var shouldRun = true
@@ -98,9 +99,9 @@ constructor(
     private val statusCheckRunnable = object : Runnable {
         override fun run() {
             try {
-                if(lastSocketRead > 0 && System.currentTimeMillis() - lastSocketRead > 3000 ) {
+                if(lastSocketRead > 0 && System.currentTimeMillis() - lastSocketRead > READ_TIMEOUT ) {
                     stop()
-                    callback(SocketTimeoutException())
+                    callback(SocketTimeoutException("Received no data from client within ${READ_TIMEOUT}ms."))
                 }
             } finally {
                 if (shouldRun)

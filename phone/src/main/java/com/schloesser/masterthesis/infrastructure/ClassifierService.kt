@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.*
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -14,8 +15,10 @@ import com.schloesser.shared.wifidirect.SharedConstants
 import org.jetbrains.anko.doAsync
 import java.io.DataOutputStream
 import java.io.IOException
+import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketTimeoutException
 
 
 class ClassifierService : Service(), ProcessFrameTask.Callback {
@@ -52,33 +55,31 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
     }
 
     private var isServerRunning = false
-
-    override fun onDestroy() {
-        super.onDestroy()
-        stopServer()
-        LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTION_SERVICE_STOPPED))
-    }
-
-    private fun startServer() {
-        if (!isServerRunning) {
-            isServerRunning = true
-            initServerSocket()
-            processingRunnable.run()
-        }
-    }
-
     private var serverRunnable: ServerRunnable? = null
     private var socketThread: Thread? = null
     private var outputStream: DataOutputStream? = null
     private var serverSocket: ServerSocket? = null
     private var socket: Socket? = null
 
-    private fun stopServer() {
-//        isServerRunning = false
-        socketThread?.interrupt()
-        socket?.close()
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopServer()
         serverSocket?.close()
-        processFrameTask.stop()
+        socket?.close()
+        socketThread?.interrupt()
+        LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTION_SERVICE_STOPPED))
+    }
+
+    private fun startServer() {
+        if (!isServerRunning) {
+            isServerRunning = true
+            initServer()
+        }
+    }
+
+    private fun stopServer() {
+        isServerRunning = false
     }
 
     var lastFrame: Bitmap? = null
@@ -90,11 +91,17 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
     var lastFace: Bitmap? = null
         @Synchronized set
 
-    private fun initServerSocket() {
+    private fun initServer() {
         updateNotification("Connecting...")
         doAsync {
             try {
-                serverSocket = ServerSocket(SharedConstants.SERVERPORT)
+
+                if (serverSocket == null) {
+                    serverSocket = ServerSocket()
+                    serverSocket?.reuseAddress = true
+                    serverSocket?.bind(InetSocketAddress(SharedConstants.SERVERPORT))
+                }
+
                 socket = serverSocket!!.accept()
                 socket?.keepAlive = true
 
@@ -106,20 +113,22 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
 
                 updateNotification("Connected to " + socket!!.inetAddress.toString().removePrefix("/"))
 
-                serverRunnable = ServerRunnable(socket!!, this@ClassifierService) { _ ->
-                    updateNotification("Connection lost")
-                    lastFrame = null
-                    lastProcessedFrame = null
-                    lastFace = null
+                serverRunnable = ServerRunnable(socket!!, this@ClassifierService) { e ->
+                    e.printStackTrace()
 
-                    stopServer()
-                    startServer()
+                    if(e is SocketTimeoutException) {
+                        stopServer()
+                        startServer()
+                    }
                 }
 
                 socketThread = Thread(serverRunnable)
                 socketThread!!.start()
 
+                processingRunnable.run()
+
             } catch (e: Exception) {
+                updateNotification("An error occurred. Please restart the service.")
                 e.printStackTrace()
             }
         }
@@ -137,7 +146,8 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
                     lastFrame = null // Set null to avoid multiple processing
                 }
             } finally {
-                Handler(Looper.getMainLooper()).post(this)
+                if (isServerRunning)
+                    Handler(Looper.getMainLooper()).post(this)
             }
         }
     }
@@ -200,11 +210,13 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
     }
 
     private fun updateNotification(message: String) {
-        notificationBuilder
-            .setContentText(message)
-            .setStyle(getNotificationText(message))
+        if (isServerRunning) {
+            notificationBuilder
+                .setContentText(message)
+                .setStyle(getNotificationText(message))
 
-        NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notificationBuilder.build())
+            NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notificationBuilder.build())
+        }
     }
 
     private fun getNotificationText(message: String): NotificationCompat.BigTextStyle {
