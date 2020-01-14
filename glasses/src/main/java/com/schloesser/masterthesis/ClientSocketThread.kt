@@ -10,6 +10,7 @@ import android.widget.EditText
 import com.schloesser.shared.wifidirect.SharedConstants
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
+import com.schloesser.shared.wifidirect.SharedConstants.Companion.TARGET_FPS
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.DataInputStream
@@ -25,8 +26,6 @@ class ClientSocketThread(
     private val handler: Handler,
     private val callback: Callback
 ) : Runnable {
-
-    // TODO: refactor threading: currently new threads are launched when connection to host fails
 
     companion object {
         private const val TAG = "ClientSocketThread"
@@ -50,10 +49,8 @@ class ClientSocketThread(
     }
 
     private fun connectToServer() {
-        Log.d("#BUG", "connectToServer")
         GlobalScope.launch {
             try {
-                Log.d("#BUG", "connectToServer2")
                 socket = Socket()
                 socket?.connect(InetSocketAddress(settingsRepository.getServerAddress(), SharedConstants.SERVERPORT), 3000)
                 socket?.keepAlive = true
@@ -63,12 +60,9 @@ class ClientSocketThread(
 
                 if (outputStream != null) {
                     startLooper()
-                } else {
-                    Log.d("#BUG", "outputStream == null")
                 }
 
             } catch (e: Exception) {
-                Log.d("#BUG", e.message ?: "")
                 e.printStackTrace()
                 showConnectionRetryDialog()
             }
@@ -107,15 +101,8 @@ class ClientSocketThread(
     }
 
     private fun startLooper() {
-        Log.d("#BUG", "startLooper")
         try {
             while (shouldRun) {
-/*                if(Thread.currentThread().isInterrupted) {
-                    socket?.close()
-                    outputStream?.close()
-                    inputStream?.close()
-                }*/
-                Log.d("#BUG", "while loop")
 
                 if (cameraPreview.frameBuffer != null
                     && cameraPreview.frameBuffer!!.size() > 0
@@ -133,7 +120,7 @@ class ClientSocketThread(
                     dos.write(cameraPreview.frameBuffer!!.toByteArray())
                     dos.flush()
 
-//                    Thread.sleep((1000 / TARGET_FPS).toLong())
+                    Thread.sleep((1000 / TARGET_FPS).toLong())
 
                     try {
                         if (inputStream != null) {
@@ -150,24 +137,17 @@ class ClientSocketThread(
                                     Log.d(TAG, "Header End Tag not present.")
                                 }
                             }
-                        } else {
-                            Log.d(TAG, "inputStream == null")
                         }
 
                     } catch (e: Exception) {
                         e.printStackTrace()
-                        Log.d("#BUG", e.message ?: "no")
                     }
-                } else {
-                    Log.d("#BUG", "no data")
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.d("#BUG", e.message ?: "no")
 
-
-/*            try {
+            try {
                 outputStream?.close()
             } catch (e2: Exception) {
                 e.printStackTrace()
@@ -177,7 +157,7 @@ class ClientSocketThread(
                 inputStream?.close()
             } catch (e2: Exception) {
                 e.printStackTrace()
-            }*/
+            }
 
             if (e is SocketException || e is ErrnoException) {
                 showConnectionRetryDialog()

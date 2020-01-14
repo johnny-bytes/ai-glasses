@@ -37,7 +37,6 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         try {
             camera = Camera.open()
         } catch (e: Exception) {
-            Log.d("#BUG", e.message ?: "")
             e.printStackTrace()
         }
         camera
@@ -51,8 +50,8 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         if (EasyPermissions.hasPermissions(this, Manifest.permission.CAMERA)) {
             if (camera == null) {
                 Toast.makeText(this, "Could not access camera.", Toast.LENGTH_LONG).show()
-                Log.d("#BUG", "camera == null")
             }
+
             cameraPreview = CameraPreview(this, camera!!)
             previewContainer.addView(cameraPreview)
 
@@ -115,6 +114,7 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         thread?.interrupt()
         clientSocketThread?.stop()
     }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,
