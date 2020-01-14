@@ -109,8 +109,6 @@ class ClientSocketThread(
                 ) {
                     val dos = DataOutputStream(outputStream)
 
-                    Log.d("#BUG", "sendData")
-
                     dos.writeUTF(HEADER_START)
                     dos.writeInt(cameraPreview.frameBuffer!!.size())
                     dos.writeUTF(HEADER_END)

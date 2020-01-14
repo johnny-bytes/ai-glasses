@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.*
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -49,7 +48,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
             sessionName = intent?.getStringExtra("sessionName")
 
             startForeground(NOTIFICATION_ID, getDefaultNotification())
-            startServer()
+            startServer(false)
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -71,10 +70,10 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
         LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTION_SERVICE_STOPPED))
     }
 
-    private fun startServer() {
+    private fun startServer(reconnecting: Boolean) {
         if (!isServerRunning) {
             isServerRunning = true
-            initServer()
+            initServer(reconnecting)
         }
     }
 
@@ -91,8 +90,8 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
     var lastFace: Bitmap? = null
         @Synchronized set
 
-    private fun initServer() {
-        updateNotification("Connecting...")
+    private fun initServer(reconnect: Boolean) {
+        updateNotification(if(reconnect) "Reconnecting..." else "Connecting...")
         doAsync {
             try {
 
@@ -111,14 +110,16 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
                     e.printStackTrace()
                 }
 
+                vibrate(false)
                 updateNotification("Connected to " + socket!!.inetAddress.toString().removePrefix("/"))
 
                 serverRunnable = ServerRunnable(socket!!, this@ClassifierService) { e ->
                     e.printStackTrace()
 
                     if(e is SocketTimeoutException) {
+                        vibrate(true)
                         stopServer()
-                        startServer()
+                        startServer(true)
                     }
                 }
 
@@ -129,6 +130,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
 
             } catch (e: Exception) {
                 updateNotification("An error occurred. Please restart the service.")
+                vibrate(true)
                 e.printStackTrace()
             }
         }
@@ -225,6 +227,18 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
         return NotificationCompat.BigTextStyle().bigText(serviceStatus + "\n" + session)
     }
 
+    private fun vibrate(error: Boolean) {
+        val duration = if (error) 800L else 400L
+
+        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE))
+        } else {
+            @Suppress("DEPRECATION")
+            vibrator.vibrate(duration)
+        }
+    }
+
     private val binder = LocalBinder()
 
     inner class LocalBinder : Binder() {
@@ -233,9 +247,5 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
 
     override fun onBind(intent: Intent): IBinder {
         return binder
-    }
-
-    override fun onRebind(intent: Intent?) {
-        super.onRebind(intent)
     }
 }
