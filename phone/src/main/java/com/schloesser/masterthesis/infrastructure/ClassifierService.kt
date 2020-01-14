@@ -73,7 +73,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
     private var socket: Socket? = null
 
     private fun stopServer() {
-        isServerRunning = false
+//        isServerRunning = false
         if (socketThread != null) socketThread!!.interrupt()
         if (socket != null) socket!!.close()
         if (serverSocket != null) serverSocket!!.close()
@@ -197,7 +197,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
 
     private fun updateNotification(message: String) {
         notificationBuilder
-            .setContentText(message + sessionName)
+            .setContentText(message)
             .setStyle(getNotificationText(message))
 
         NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notificationBuilder.build())

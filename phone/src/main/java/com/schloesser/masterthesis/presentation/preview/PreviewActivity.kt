@@ -1,7 +1,6 @@
 package com.schloesser.masterthesis.presentation.preview
 
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Bundle
@@ -58,10 +57,13 @@ open class PreviewActivity : AppCompatActivity() {
         }
     }
 
+    private var processingRunnableStopped = false
+
     override fun onStop() {
         super.onStop()
         unbindService(connection)
         isBoundToService = false
+        processingRunnableStopped = true
     }
 
     private val processingRunnable = object : Runnable {
@@ -72,7 +74,8 @@ open class PreviewActivity : AppCompatActivity() {
                     imvFace.setImageBitmap(service?.lastFace)
                 }
             } finally {
-                Handler().post(this)
+                if (!processingRunnableStopped)
+                    Handler().post(this)
             }
         }
     }

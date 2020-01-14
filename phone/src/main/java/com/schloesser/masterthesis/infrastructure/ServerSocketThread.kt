@@ -59,11 +59,11 @@ constructor(
         } catch (e: Exception) {
             e.printStackTrace()
             callback(e)
-            try {
-                inputStream?.close()
-            } catch (e2: Exception) {
-                e.printStackTrace()
-            }
+//            try {
+//                inputStream?.close()
+//            } catch (e2: Exception) {
+//                e.printStackTrace()
+//            }
         }
     }
 

@@ -49,6 +49,7 @@ class ClientSocketThread(
     private fun connectToServer() {
         GlobalScope.launch {
             try {
+                val socket = Socket()
                 socket.connect(InetSocketAddress(settingsRepository.getServerAddress(), SharedConstants.SERVERPORT), 3000)
                 socket.keepAlive = true
 
@@ -100,11 +101,11 @@ class ClientSocketThread(
     private fun startLooper() {
         try {
             while (true) {
-                if(Thread.currentThread().isInterrupted) {
+/*                if(Thread.currentThread().isInterrupted) {
                     socket?.close()
                     outputStream?.close()
                     inputStream?.close()
-                }
+                }*/
 
                 if (outputStream != null
                     && cameraPreview.frameBuffer != null
