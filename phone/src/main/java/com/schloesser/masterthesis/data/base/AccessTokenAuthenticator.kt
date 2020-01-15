@@ -102,10 +102,13 @@ class AccessTokenAuthenticator(private val context: Context) : Authenticator {
             .build()
 
         val response = okHttpClient.newCall(request).execute()
-        val jsonResponse = JSONObject(response.body?.string() ?: "{}")
 
-        if (jsonResponse.has("access")) {
-            return jsonResponse.getString("access")
+        if(response.isSuccessful) {
+            val jsonResponse = JSONObject(response.body?.string() ?: "{}")
+
+            if (jsonResponse.has("access")) {
+                return jsonResponse.getString("access")
+            }
         }
 
         return null

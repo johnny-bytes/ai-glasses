@@ -7,6 +7,7 @@ import com.schloesser.masterthesis.data.base.ApiFactory
 import com.schloesser.masterthesis.infrastructure.base.getRequestBody
 import retrofit2.Response
 import java.io.File
+import java.io.IOException
 
 class UploadFrameJob(appContext: Context, workerParams: WorkerParameters) : Worker(appContext, workerParams) {
 
@@ -32,6 +33,12 @@ class UploadFrameJob(appContext: Context, workerParams: WorkerParameters) : Work
             e.printStackTrace()
             Log.d("UploadFrameJob", "failure2")
             Result.failure()
+        } finally {
+            try {
+                file.delete()
+            } catch(e: IOException) {
+                e.printStackTrace()
+            }
         }
     }
 
