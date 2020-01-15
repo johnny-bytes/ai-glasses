@@ -57,8 +57,8 @@ class LoginActivity : AppCompatActivity() {
                     loadingIndicator.gone()
 
                     if (response.code() == 200) {
-                        SessionRepository.getInstance(this@LoginActivity).setAccessToken(response.body()?.token?.access!!)
-                        SessionRepository.getInstance(this@LoginActivity).setRefreshToken(response.body()?.token?.refresh!!)
+                        SessionRepository.getInstance(this@LoginActivity).accessToken = response.body()?.token?.access!!
+                        SessionRepository.getInstance(this@LoginActivity).refreshToken = response.body()?.token?.refresh!!
                         startActivity(Intent(this@LoginActivity, InternalActivity::class.java))
                         finish()
                     } else {

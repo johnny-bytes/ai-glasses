@@ -56,7 +56,7 @@ class ApiFactory private constructor(private val context: Context) {
         override fun intercept(chain: Interceptor.Chain): Response {
             val request = chain.request()
             val builder: Request.Builder = request.newBuilder()
-            val accessToken = SessionRepository.getInstance(context).getAccessToken()
+            val accessToken = SessionRepository.getInstance(context).accessToken
 
             if (accessToken != null) {
                 builder.header(AUTHORIZATION_HEADER_NAME, getAuthorizationheader(accessToken))

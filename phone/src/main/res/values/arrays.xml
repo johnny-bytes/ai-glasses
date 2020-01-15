@@ -1,0 +1,27 @@
+<resources>
+    <string-array name="classifier_entries">
+        <item>Ekman Base Emotions (Jannik Rößler)</item>
+    </string-array>
+
+    <string-array name="classifier_values">
+        <item>ekman_base_emotions_roessler</item>
+    </string-array>
+
+
+    <string-array name="face_fectection_entries">
+        <item>OpenCV Cascade v1</item>
+    </string-array>
+
+    <string-array name="face_fectection_values">
+        <item>opencv_cascade_v1</item>
+    </string-array>
+
+
+    <string-array name="gaze_detection_entries">
+        <item>Largest Area</item>
+    </string-array>
+
+    <string-array name="gaze_detection_values">
+        <item>largest_area</item>
+    </string-array>
+</resources>

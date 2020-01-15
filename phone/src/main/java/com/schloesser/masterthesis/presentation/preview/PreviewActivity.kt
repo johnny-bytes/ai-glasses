@@ -17,6 +17,7 @@ import kotlinx.android.synthetic.main.activity_video.*
 open class PreviewActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        overridePendingTransition(0,0)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -78,5 +79,10 @@ open class PreviewActivity : AppCompatActivity() {
                     Handler().post(this)
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right);
     }
 }

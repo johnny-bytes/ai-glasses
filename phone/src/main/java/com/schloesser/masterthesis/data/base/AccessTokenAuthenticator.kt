@@ -31,7 +31,7 @@ class AccessTokenAuthenticator(private val context: Context) : Authenticator {
 
         Log.d(TAG, "Access Token expired.")
 
-        val accessToken = SessionRepository.getInstance(context).getAccessToken()
+        val accessToken = SessionRepository.getInstance(context).accessToken
 
         if (!hasBearerAuthorizationToken(response) || accessToken == null) {
             Log.d(TAG, "Request does not need authorization or AT was not previously set.")
@@ -41,7 +41,7 @@ class AccessTokenAuthenticator(private val context: Context) : Authenticator {
         synchronized(this) {
 
             // Get possible new access token, that was requested in another thread
-            val newAccessToken = SessionRepository.getInstance(context).getAccessToken()
+            val newAccessToken = SessionRepository.getInstance(context).accessToken
 
             // Check if access token already changed
             if (accessToken != newAccessToken && newAccessToken != null) {
@@ -55,7 +55,7 @@ class AccessTokenAuthenticator(private val context: Context) : Authenticator {
 
                 if (updatedAccessToken != null) {
                     Log.d(TAG, "Access Token has been refreshed.")
-                    SessionRepository.getInstance(context).setAccessToken(updatedAccessToken)
+                    SessionRepository.getInstance(context).accessToken = updatedAccessToken
                     return newRequestWithAccessToken(response.request, updatedAccessToken)
                 } else {
                     Log.d(TAG, "Could not refresh access token.")
@@ -91,7 +91,7 @@ class AccessTokenAuthenticator(private val context: Context) : Authenticator {
     private fun refreshAccessToken(): String? {
 
         val body = JSONObject().apply {
-            put("refresh", SessionRepository.getInstance(context).getRefreshToken())
+            put("refresh", SessionRepository.getInstance(context).refreshToken)
         }
 
         val jsonMediaType = "application/json".toMediaTypeOrNull()

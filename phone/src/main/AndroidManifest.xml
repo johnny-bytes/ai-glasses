@@ -30,7 +30,6 @@
         android:required="true" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
-
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -73,6 +72,10 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".presentation.uploadFrame.UploadFrameActivity"
+            android:launchMode="singleInstance"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".presentation.settings.SettingsActivity"
             android:launchMode="singleInstance"
             android:screenOrientation="portrait" />
     </application>

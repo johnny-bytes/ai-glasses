@@ -1,0 +1,92 @@
+<androidx.preference.PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <PreferenceCategory android:title="Communication">
+
+        <EditTextPreference
+            android:defaultValue="10"
+            android:icon="@drawable/ic_timer_black_24dp"
+            android:key="sendFrameIntervalSeconds"
+            android:summary="Frames are sent to the backend every x seconds."
+            android:title="Frame Interval" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="System">
+
+        <ListPreference
+            android:defaultValue="ekman_base_emotions_roessler"
+            android:entries="@array/classifier_entries"
+            android:entryValues="@array/classifier_values"
+            android:key="classifier"
+            android:title="Classifer"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            android:defaultValue="opencv_cascade_v1"
+            android:entries="@array/face_fectection_entries"
+            android:entryValues="@array/face_fectection_values"
+            android:key="faceDetection"
+            android:title="Face Detection"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            android:defaultValue="largest_area"
+            android:entries="@array/gaze_detection_entries"
+            android:entryValues="@array/gaze_detection_values"
+            android:key="gazeDetection"
+            android:title="Gaze Detection"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory>
+
+        <Preference
+            android:key="single_line_title"
+            android:summary="Version 1.0"
+            android:title="AI Glasses - Host App" />
+    </PreferenceCategory>
+
+
+</androidx.preference.PreferenceScreen>
+
+    <!--
+    <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+        <PreferenceCategory app:title="@string/messages_header">
+
+            <EditTextPreference
+                app:key="signature"
+                app:title="@string/signature_title"
+                app:useSimpleSummaryProvider="true" />
+
+            <ListPreference
+                app:defaultValue="reply"
+                app:entries="@array/reply_entries"
+                app:entryValues="@array/reply_values"
+                app:key="reply"
+                app:title="@string/reply_title"
+                app:useSimpleSummaryProvider="true" />
+
+        </PreferenceCategory>
+
+        <PreferenceCategory app:title="@string/sync_header">
+
+            <SwitchPreferenceCompat
+                app:key="sync"
+                app:title="@string/sync_title" />
+
+            <SwitchPreferenceCompat
+                app:dependency="sync"
+                app:key="attachment"
+                app:summaryOff="@string/attachment_summary_off"
+                app:summaryOn="@string/attachment_summary_on"
+                app:title="@string/attachment_title" />
+
+        </PreferenceCategory>
+
+    </PreferenceScreen>
+    -->

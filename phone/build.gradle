@@ -51,7 +51,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'org.jetbrains.anko:anko:0.10.8'
 
-    // AndroidX
+    // Android
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
     implementation 'androidx.appcompat:appcompat:1.1.0'
@@ -61,6 +61,7 @@ dependencies {
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
     implementation 'com.github.dhaval2404:imagepicker:1.4'
     implementation 'pub.devrel:easypermissions:3.0.0'
+    implementation 'androidx.preference:preference:1.1.0'
 
     // Tensorflow
     implementation 'org.tensorflow:tensorflow-lite:1.15.0'

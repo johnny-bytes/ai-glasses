@@ -19,6 +19,7 @@ import com.schloesser.masterthesis.infrastructure.ClassifierService
 import com.schloesser.masterthesis.presentation.login.LoginActivity
 import com.schloesser.masterthesis.presentation.preview.PreviewActivity
 import com.schloesser.masterthesis.presentation.selectSession.SelectSessionDialog
+import com.schloesser.masterthesis.presentation.settings.SettingsActivity
 import com.schloesser.masterthesis.presentation.uploadFrame.UploadFrameActivity
 import kotlinx.android.synthetic.main.activity_internal.*
 import org.opencv.android.InstallCallbackInterface
@@ -95,12 +96,19 @@ class InternalActivity : AppCompatActivity() {
     }
 
     private fun initButtons() {
-        btnUploadFrame.setOnClickListener {
-            startActivity(Intent(this, UploadFrameActivity::class.java))
-        }
-
         btnPreview.setOnClickListener {
             startActivity(Intent(this, PreviewActivity::class.java))
+            overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
+        }
+
+        btnUploadFrame.setOnClickListener {
+            startActivity(Intent(this, UploadFrameActivity::class.java))
+            overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
+        }
+
+        btnSettings.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity   ::class.java))
+            overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
         }
 
         btnLogout.setOnClickListener {
