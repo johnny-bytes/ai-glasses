@@ -5,11 +5,16 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.*
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import com.schloesser.masterthesis.LauncherActivity
 import com.schloesser.masterthesis.R
+import com.schloesser.masterthesis.data.job.UploadFrameJob
+import com.schloesser.masterthesis.data.repository.SettingsRepository
+import com.schloesser.masterthesis.infrastructure.base.storeImage
 import com.schloesser.shared.wifidirect.SharedConstants
 import org.jetbrains.anko.doAsync
 import java.io.DataOutputStream
@@ -84,14 +89,14 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
     var lastFrame: Bitmap? = null
         @Synchronized set
 
-    var lastProcessedFrame: Bitmap? = null
+    var lastFrameProcessed: Bitmap? = null
         @Synchronized set
 
     var lastFace: Bitmap? = null
         @Synchronized set
 
     private fun initServer(reconnect: Boolean) {
-        updateNotification(if(reconnect) "Reconnecting..." else "Connecting...")
+        updateNotification(if (reconnect) "Reconnecting..." else "Connecting...")
         doAsync {
             try {
 
@@ -116,7 +121,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
                 serverRunnable = ServerRunnable(socket!!, this@ClassifierService) { e ->
                     e.printStackTrace()
 
-                    if(e is SocketTimeoutException) {
+                    if (e is SocketTimeoutException) {
                         vibrate(true)
                         stopServer()
                         startServer(true)
@@ -127,6 +132,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
                 socketThread!!.start()
 
                 processingRunnable.run()
+                uploadFrameRunnable.run()
 
             } catch (e: Exception) {
                 updateNotification("An error occurred. Please restart the service.")
@@ -145,7 +151,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
             try {
                 if (lastFrame != null) {
                     processFrameTask.run(lastFrame!!, this@ClassifierService)
-                    lastFrame = null // Set null to avoid multiple processing
+//                    lastFrame = null // Set null to avoid multiple processing
                 }
             } finally {
                 if (isServerRunning)
@@ -156,7 +162,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
 
     override fun onProcessFrameResults(faceCount: Int, emotionLabel: String, labelConfidence: Float, frame: Bitmap, processedCenterFace: Bitmap?) {
         sendProcessingResults(faceCount, emotionLabel, labelConfidence)
-        lastProcessedFrame = frame
+        lastFrameProcessed = frame
         lastFace = processedCenterFace
     }
 
@@ -171,6 +177,29 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
                 outputStream!!.flush()
             } catch (e: IOException) {
                 e.printStackTrace()
+            }
+        }
+    }
+
+    private val sharedPreferences by lazy {
+        PreferenceManager.getDefaultSharedPreferences(this)
+    }
+
+    private var lastSentFrame: Bitmap? = null
+
+    private val uploadFrameRunnable = object : Runnable {
+        override fun run() {
+            try {
+                if (lastFrame != null && lastFrame != lastSentFrame) {
+                    val file = lastFrame?.storeImage(this@ClassifierService)
+                    UploadFrameJob.scheduleJob(this@ClassifierService, sessionId!!, file!!)
+                    lastSentFrame = lastFrame
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            } finally {
+                if (isServerRunning)
+                    Handler(Looper.getMainLooper()).postDelayed(this, SettingsRepository.getInstance(this@ClassifierService).sendFrameIntervalSeconds * 1000L)
             }
         }
     }

@@ -6,11 +6,12 @@
     <PreferenceCategory android:title="Communication">
 
         <EditTextPreference
-            android:defaultValue="10"
+            android:defaultValue="30"
             android:icon="@drawable/ic_timer_black_24dp"
             android:key="sendFrameIntervalSeconds"
             android:summary="Frames are sent to the backend every x seconds."
-            android:title="Frame Interval" />
+            android:title="Frame Interval"
+            android:dialogLayout="@layout/preference_edit_text" />
 
     </PreferenceCategory>
 

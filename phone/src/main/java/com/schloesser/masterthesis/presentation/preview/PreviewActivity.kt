@@ -70,8 +70,8 @@ open class PreviewActivity : AppCompatActivity() {
     private val processingRunnable = object : Runnable {
         override fun run() {
             try {
-                if (service?.lastProcessedFrame != null) {
-                    imvCameraPreview.setImageBitmap(service?.lastProcessedFrame)
+                if (service?.lastFrameProcessed != null) {
+                    imvCameraPreview.setImageBitmap(service?.lastFrameProcessed)
                     imvFace.setImageBitmap(service?.lastFace)
                 }
             } finally {

@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.github.dhaval2404.imagepicker.ImagePicker
 import com.schloesser.masterthesis.R
 import com.schloesser.masterthesis.data.base.ApiFactory
+import com.schloesser.masterthesis.infrastructure.base.getRequestBody
 import com.schloesser.masterthesis.presentation.extension.gone
 import com.schloesser.masterthesis.presentation.extension.visible
 import kotlinx.android.synthetic.main.activity_upload_frame.*
@@ -84,16 +85,11 @@ class UploadFrameActivity : AppCompatActivity() {
         }
     }
 
-    private fun getRequestBody(file: File): MultipartBody.Part {
-        val reqFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-        return MultipartBody.Part.createFormData("file", file.name, reqFile)
-    }
-
     private fun uploadFile(file: File) {
         loadingIndicator.visible()
         txvResult.text = ""
 
-        val body = getRequestBody(file)
+        val body = file.getRequestBody()
 
         ApiFactory.getInstance(this).api.sendFrame(body, 1).enqueue(object : Callback<String> {
 

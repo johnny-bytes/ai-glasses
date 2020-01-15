@@ -30,6 +30,10 @@ android {
         }
     }
 
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
     sourceSets {
         main {
             jniLibs.srcDirs "src/main/jniLibs"
@@ -57,11 +61,12 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.core:core-ktx:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'com.google.android.material:material:1.2.0-alpha03'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
+    implementation "androidx.work:work-runtime-ktx:2.2.0"
+    implementation 'androidx.preference:preference:1.1.0'
+    implementation 'com.google.android.material:material:1.2.0-alpha03'
     implementation 'com.github.dhaval2404:imagepicker:1.4'
     implementation 'pub.devrel:easypermissions:3.0.0'
-    implementation 'androidx.preference:preference:1.1.0'
 
     // Tensorflow
     implementation 'org.tensorflow:tensorflow-lite:1.15.0'
