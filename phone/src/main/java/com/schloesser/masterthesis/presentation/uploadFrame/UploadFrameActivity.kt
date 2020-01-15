@@ -90,8 +90,9 @@ class UploadFrameActivity : AppCompatActivity() {
         txvResult.text = ""
 
         val body = file.getRequestBody()
+        val sessionId = edtSessionId.text.toString().toInt()
 
-        ApiFactory.getInstance(this).api.sendFrame(body, 1).enqueue(object : Callback<String> {
+        ApiFactory.getInstance(this).api.sendFrame(body, sessionId).enqueue(object : Callback<String> {
 
             override fun onFailure(call: Call<String>, t: Throwable) {
                 loadingIndicator.gone()
