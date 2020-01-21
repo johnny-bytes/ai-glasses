@@ -37,6 +37,7 @@ class CameraPreview(context: Context, private var camera: Camera) : SurfaceView(
     override fun surfaceDestroyed(holder: SurfaceHolder) {
         camera.setPreviewCallback(null)
         camera.release()
+        frameBuffer = null
     }
 
     private var frameWidth: Int = 0
@@ -66,13 +67,15 @@ class CameraPreview(context: Context, private var camera: Camera) : SurfaceView(
         }
     }
 
-    override fun onPreviewFrame(data: ByteArray, camera: Camera) {
+    override fun onPreviewFrame(data: ByteArray?, camera: Camera) {
         try {
-            val yuvimage = YuvImage(data, ImageFormat.NV21, frameWidth, frameHeight, null)
+            if(data != null && data.isNotEmpty()) {
+                val yuvimage = YuvImage(data, ImageFormat.NV21, frameWidth, frameHeight, null)
 
-            val baos = ByteArrayOutputStream()
-            yuvimage.compressToJpeg(Rect(0, 0, frameWidth, frameHeight), IMAGE_QUALITY, baos)
-            frameBuffer = baos
+                val baos = ByteArrayOutputStream()
+                yuvimage.compressToJpeg(Rect(0, 0, frameWidth, frameHeight), IMAGE_QUALITY, baos)
+                frameBuffer = baos
+            }
 
         } catch (e: Exception) {
             e.printStackTrace()

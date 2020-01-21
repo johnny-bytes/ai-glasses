@@ -3,18 +3,17 @@
 package com.schloesser.masterthesis
 
 import android.Manifest
-import android.annotation.SuppressLint
+import android.content.Context
 import android.hardware.Camera
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
+import android.os.PowerManager
 import android.view.WindowManager
 import android.widget.Toast
 import com.vuzix.hud.actionmenu.ActionMenuActivity
 import kotlinx.android.synthetic.main.activity_main.*
 import pub.devrel.easypermissions.EasyPermissions
 import java.util.*
-import kotlin.math.roundToInt
 
 
 class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
@@ -24,11 +23,18 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         const val PERMISSION_REQUEST_CODE = 231
     }
 
+    private val wakeLock: PowerManager.WakeLock by lazy {
+        (getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+            newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "aig:wakelock")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        wakeLock.acquire()
         startVideoStreaming()
     }
 
@@ -70,7 +76,7 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
     }
 
     override fun onFaceCountChanged(count: Int) {
-        txvFaceCount.text = when(count) {
+        txvFaceCount.text = when (count) {
             0 -> "No faces detected"
             1 -> "Detected 1 face"
             else -> "Detected $count faces"
@@ -82,7 +88,7 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
     private val emotionLabels = LimitedQueue<String>(3)
 
     override fun onEmotionChanged(emotion: String, confidence: Float) {
-        if(emotion.isNotBlank()) {
+        if (emotion.isNotBlank()) {
             emotionLabels.add(emotion)
         }
 
@@ -113,6 +119,11 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         super.onStop()
         thread?.interrupt()
         clientSocketThread?.stop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        wakeLock.release()
     }
 
 
