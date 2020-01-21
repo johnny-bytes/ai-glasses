@@ -7,10 +7,10 @@ import android.os.Looper
 import android.util.Log
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
-import kotlinx.coroutines.delay
 import org.jetbrains.anko.doAsync
 import java.io.DataInputStream
 import java.io.IOException
+import java.io.UTFDataFormatException
 import java.lang.ref.WeakReference
 import java.net.Socket
 import java.net.SocketTimeoutException
@@ -76,30 +76,35 @@ constructor(
     private var lastSocketRead: Long = 0
 
     private fun readInputStream() {
-        if (inputStream!!.readUTF() == HEADER_START) {
+        try {
+            if (inputStream!!.readUTF() == HEADER_START) {
 
-            lastSocketRead = System.currentTimeMillis()
+                lastSocketRead = System.currentTimeMillis()
 
-            val imgLength = inputStream!!.readInt()
+                val imgLength = inputStream!!.readInt()
 
-            if (inputStream!!.readUTF() != HEADER_END) {
-                Log.d(TAG, "Header End Tag not present.")
+                if (inputStream!!.readUTF() != HEADER_END) {
+                    Log.d(TAG, "Header End Tag not present.")
+                }
+
+                val buffer = ByteArray(imgLength)
+                var len = 0
+                while (len < imgLength) {
+                    len += inputStream!!.read(buffer, len, imgLength - len)
+                }
+
+                service.get()?.lastFrame =
+                    BitmapFactory.decodeByteArray(buffer, 0, buffer.size, bitmapOptions)
             }
-
-            val buffer = ByteArray(imgLength)
-            var len = 0
-            while (len < imgLength) {
-                len += inputStream!!.read(buffer, len, imgLength - len)
-            }
-
-            service.get()?.lastFrame = BitmapFactory.decodeByteArray(buffer, 0, buffer.size, bitmapOptions)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
     private val statusCheckRunnable = object : Runnable {
         override fun run() {
             try {
-                if(lastSocketRead > 0 && System.currentTimeMillis() - lastSocketRead > READ_TIMEOUT ) {
+                if (lastSocketRead > 0 && System.currentTimeMillis() - lastSocketRead > READ_TIMEOUT) {
                     stop()
                     callback(SocketTimeoutException("Received no data from client within ${READ_TIMEOUT}ms."))
                 }

@@ -189,6 +189,8 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
 
     private val uploadFrameRunnable = object : Runnable {
         override fun run() {
+            if(SettingsRepository.getInstance(this@ClassifierService).offlineModeEnabled) return
+
             try {
                 if (lastFrame != null && lastFrame != lastSentFrame) {
                     val file = lastFrame?.storeImage(this@ClassifierService)

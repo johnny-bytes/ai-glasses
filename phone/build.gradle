@@ -41,7 +41,7 @@ android {
     }
 
     aaptOptions {
-        noCompress "emotion_classifier.tflite", "model_v6_23.tflite"
+        noCompress 'tflite'
     }
 }
 

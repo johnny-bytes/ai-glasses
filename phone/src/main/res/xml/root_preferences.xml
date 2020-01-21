@@ -13,6 +13,14 @@
             android:title="Frame Interval"
             android:dialogLayout="@layout/preference_edit_text" />
 
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_cloud_off_black_24dp"
+            android:key="offlineModeEnabled"
+            android:summary="Do not send frames to the backend."
+            android:title="Offline Mode"
+            android:dialogLayout="@layout/preference_edit_text" />
+
     </PreferenceCategory>
 
     <PreferenceCategory android:title="System">

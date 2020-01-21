@@ -17,8 +17,8 @@ class OpenCVPreprocessing: Preprocessing  {
 
     override fun processFace(frame: Mat, face: Rect): Mat {
         val croppedMat = Mat(frame, face)
-//        val scaleSize = Size(48.0, 48.0)
-        val scaleSize = Size(100.0, 100.0)
+        val scaleSize = Size(64.0, 64.0)
+//        val scaleSize = Size(100.0, 100.0)
         val scaledFace = Mat()
         Imgproc.resize(croppedMat, scaledFace, scaleSize)
         return scaledFace

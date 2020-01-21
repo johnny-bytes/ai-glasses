@@ -27,7 +27,7 @@ import java.io.IOException;
 /**
  * This TensorFlowLite classifier works with the float MobileNet model.
  */
-public class EmotionClassifier extends Classifier {
+public class EmotionFER2013Classifier extends Classifier {
 
     /**
      * Float MobileNet requires additional normalization of the used input.
@@ -49,19 +49,19 @@ public class EmotionClassifier extends Classifier {
      *
      * @param context
      */
-    public EmotionClassifier(Context context, Device device, int numThreads)
+    public EmotionFER2013Classifier(Context context, Device device, int numThreads)
             throws IOException {
         super(context, device, numThreads);
     }
 
     @Override
     protected String getModelPath() {
-        return "emotion_classifier.tflite";
+        return "fer2013.tflite";
     }
 
     @Override
     protected String getLabelPath() {
-        return "emotion_labels.txt";
+        return "fer2013_labels.txt";
     }
 
     @Override
