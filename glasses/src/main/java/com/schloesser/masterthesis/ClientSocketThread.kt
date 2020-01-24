@@ -85,6 +85,9 @@ class ClientSocketThread(
                 settingsRepository.setServerAddress(addressInput.text.toString().trim())
                 connectToServer()
             }
+            builder.setNegativeButton("Close App") { _, _ ->
+                callback.onCloseApp()
+            }
             builder.setCancelable(false)
 
             try {
@@ -172,5 +175,6 @@ class ClientSocketThread(
     interface Callback {
         fun onFaceCountChanged(count: Int)
         fun onEmotionChanged(emotion: String, confidence: Float)
+        fun onCloseApp()
     }
 }

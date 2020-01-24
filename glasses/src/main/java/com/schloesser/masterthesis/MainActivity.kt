@@ -102,6 +102,10 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
         }
     }
 
+    override fun onCloseApp() {
+        finish()
+    }
+
     private fun getMedianEmotionLabel(): String {
         var result = ""
 
