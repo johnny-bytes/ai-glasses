@@ -76,7 +76,7 @@ open class PreviewActivity : AppCompatActivity() {
                 }
             } finally {
                 if (!processingRunnableStopped)
-                    Handler().post(this)
+                    Handler().postDelayed(this, 500)
             }
         }
     }
