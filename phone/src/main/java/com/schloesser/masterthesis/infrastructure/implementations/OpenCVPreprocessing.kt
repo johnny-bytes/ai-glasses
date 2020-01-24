@@ -1,6 +1,7 @@
 package com.schloesser.masterthesis.infrastructure.implementations
 
 import com.schloesser.masterthesis.infrastructure.base.Preprocessing
+import com.schloesser.masterthesis.infrastructure.implementations.EmotionClassifier.FACE_SIZE
 import org.opencv.core.Mat
 import org.opencv.core.Rect
 import org.opencv.core.Size
@@ -17,7 +18,7 @@ class OpenCVPreprocessing: Preprocessing  {
 
     override fun processFace(frame: Mat, face: Rect): Mat {
         val croppedMat = Mat(frame, face)
-        val scaleSize = Size(64.0, 64.0)
+        val scaleSize = Size(FACE_SIZE, FACE_SIZE)
 //        val scaleSize = Size(100.0, 100.0)
         val scaledFace = Mat()
         Imgproc.resize(croppedMat, scaledFace, scaleSize)

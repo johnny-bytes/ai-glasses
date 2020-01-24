@@ -3,6 +3,7 @@ package com.schloesser.masterthesis.infrastructure
 import android.content.Context
 import android.graphics.Bitmap
 import com.schloesser.masterthesis.infrastructure.base.Classifier
+import com.schloesser.masterthesis.infrastructure.implementations.EmotionClassifier.FACE_SIZE
 import com.schloesser.masterthesis.infrastructure.implementations.EmotionFER2013Classifier
 import com.schloesser.masterthesis.infrastructure.implementations.OpenCVCascadeFaceDetector
 import com.schloesser.masterthesis.infrastructure.implementations.OpenCVPreprocessing
@@ -25,8 +26,8 @@ class ProcessFrameTask(context: Context) {
     private val emotionClassifier = EmotionFER2013Classifier(context, Classifier.Device.GPU, 1)
 
     private val faceBuffer: ByteBuffer by lazy {
-        val buffer = ByteBuffer.allocateDirect(1 * 64 * 64 * 4)
-//        val buffer = ByteBuffer.allocateDirect(1 * 100 * 100 * 4)
+        val buffer = ByteBuffer.allocateDirect((1 * FACE_SIZE * FACE_SIZE * 4).toInt())
+
         buffer.order(ByteOrder.nativeOrder())
         buffer
     }
@@ -94,10 +95,8 @@ class ProcessFrameTask(context: Context) {
 
     private fun fillFaceBuffer(face: Mat) {
         faceBuffer.rewind()
-/*        for (i in 0 until 100) {
-            for (j in 0 until 100) {*/
-        for (i in 0 until 64) {
-            for (j in 0 until 64) {
+        for (i in 0 until FACE_SIZE.toInt()) {
+            for (j in 0 until FACE_SIZE.toInt()) {
                 faceBuffer.putFloat(face.get(i, j)[0].toFloat())
             }
         }

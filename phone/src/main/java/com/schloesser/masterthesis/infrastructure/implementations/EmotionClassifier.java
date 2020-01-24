@@ -29,6 +29,9 @@ import java.io.IOException;
  */
 public class EmotionClassifier extends Classifier {
 
+    public static final double FACE_SIZE = 64f;
+
+
     /**
      * Float MobileNet requires additional normalization of the used input.
      */
