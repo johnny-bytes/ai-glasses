@@ -10,9 +10,9 @@ import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
 import org.jetbrains.anko.doAsync
 import java.io.DataInputStream
 import java.io.IOException
-import java.io.UTFDataFormatException
 import java.lang.ref.WeakReference
 import java.net.Socket
+import java.net.SocketException
 import java.net.SocketTimeoutException
 
 class ServerRunnable @Throws(IOException::class)
@@ -97,7 +97,8 @@ constructor(
                     BitmapFactory.decodeByteArray(buffer, 0, buffer.size, bitmapOptions)
             }
         } catch (e: Exception) {
-            e.printStackTrace()
+            if (e !is SocketException)
+                e.printStackTrace()
         }
     }
 

@@ -75,7 +75,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
         LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTION_SERVICE_STOPPED))
     }
 
-    private fun startServer(reconnecting: Boolean) {
+    private fun startServer(reconnecting: Boolean, error: Throwable? = null) {
         if (!isServerRunning) {
             isServerRunning = true
             initServer(reconnecting)
@@ -95,8 +95,8 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
     var lastFace: Bitmap? = null
         @Synchronized set
 
-    private fun initServer(reconnect: Boolean) {
-        updateNotification(if (reconnect) "Reconnecting..." else "Connecting...")
+    private fun initServer(reconnect: Boolean, error: Throwable? = null) {
+        updateNotification(if (reconnect) "Reconnecting... (${error?.message})" else "Connecting...")
         doAsync {
             try {
 
@@ -124,7 +124,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
                     if (e is SocketTimeoutException) {
                         vibrate(true)
                         stopServer()
-                        startServer(true)
+                        startServer(true, e)
                     }
                 }
 
@@ -164,6 +164,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
         sendProcessingResults(faceCount, emotionLabel, labelConfidence)
         lastFrameProcessed = frame
         lastFace = processedCenterFace
+        updateNotification("Connected to " + socket!!.inetAddress.toString().removePrefix("/"))
     }
 
     private fun sendProcessingResults(faceCount: Int, emotionLabel: String, labelConfidence: Float) {

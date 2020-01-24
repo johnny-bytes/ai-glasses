@@ -18,8 +18,8 @@ import java.io.ByteArrayOutputStream
 // Camera 1 API is recommended for use with Vuzix Blade: https://www.vuzix.com/Developer/KnowledgeBase/Detail/1085
 @SuppressLint("ViewConstructor")
 class CameraPreview(context: Context, private var camera: Camera) : SurfaceView(context), SurfaceHolder.Callback, Camera.PreviewCallback {
-    
-    var frameBuffer: ByteArrayOutputStream? = null
+
+    @Volatile var frameBuffer: ByteArrayOutputStream? = null
 
     init {
         holder.addCallback(this)
