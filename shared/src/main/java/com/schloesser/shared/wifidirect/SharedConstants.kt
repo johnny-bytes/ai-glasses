@@ -11,6 +11,9 @@ class SharedConstants {
         const val FRAME_WIDTH = 1280
         const val FRAME_HEIGHT = 720
 
+//        const val FRAME_WIDTH = 1920
+//        const val FRAME_HEIGHT = 1080
+
         const val TARGET_FPS = 15
         const val IMAGE_QUALITY = 70
 

@@ -3,7 +3,6 @@ package com.schloesser.masterthesis.infrastructure.implementations
 import android.content.Context
 import android.util.Log
 import com.schloesser.masterthesis.R
-import com.schloesser.masterthesis.infrastructure.base.DetectionBasedTracker
 import com.schloesser.masterthesis.infrastructure.base.FaceDetector
 import com.schloesser.masterthesis.infrastructure.implementations.EmotionClassifier.FACE_SIZE
 import org.opencv.core.Mat
@@ -22,7 +21,7 @@ class OpenCVCascadeFaceDetector(context: Context): FaceDetector {
     }
 
     private lateinit var javaFaceDetector: CascadeClassifier
-    private lateinit var nativeFaceDetector: DetectionBasedTracker
+//    private lateinit var nativeFaceDetector: DetectionBasedTracker
 
     init {
         try {
@@ -58,7 +57,7 @@ class OpenCVCascadeFaceDetector(context: Context): FaceDetector {
 
     override fun detectFaces(image: Mat): Array<Rect> {
         val faces = MatOfRect()
-        javaFaceDetector.detectMultiScale(image, faces, 1.1, 4, 2, Size(FACE_SIZE, FACE_SIZE), Size())
+        javaFaceDetector.detectMultiScale(image, faces, 1.05, 4, 0, Size(FACE_SIZE, FACE_SIZE), Size())
         return faces.toArray()
     }
 

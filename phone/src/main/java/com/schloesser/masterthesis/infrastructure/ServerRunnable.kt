@@ -61,7 +61,7 @@ constructor(
 
     private fun startLooper() {
         try {
-            while (true) {
+            while (shouldRun) {
 
                 if (inputStream != null) {
                     readInputStream()

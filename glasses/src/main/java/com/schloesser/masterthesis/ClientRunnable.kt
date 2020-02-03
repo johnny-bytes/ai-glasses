@@ -69,6 +69,8 @@ class ClientRunnable(
                 outputStream = DataOutputStream(socket?.getOutputStream())
                 inputStream = DataInputStream(socket?.getInputStream())
 
+                shouldRun = true
+
                 Thread(readInputRunnable).start()
                 startLooper()
 
@@ -107,7 +109,7 @@ class ClientRunnable(
                 }
                 dialog.show()
 
-            } catch (e: WindowManager.BadTokenException) {
+            } catch (e: Exception) {
                 // Activity was closed.
             }
         }
@@ -152,6 +154,7 @@ class ClientRunnable(
             }
 
             if (e is SocketException || e is ErrnoException) {
+                shouldRun = false
                 showConnectionRetryDialog()
             }
         }
@@ -175,8 +178,8 @@ class ClientRunnable(
     }
 
     private val readInputRunnable = Runnable {
-        try {
-            while (shouldRun) {
+        while (shouldRun) {
+            try {
 
                 if (inputStream!!.readUTF() == HEADER_START) {
 
@@ -191,9 +194,9 @@ class ClientRunnable(
                         Log.d(TAG, "Header End Tag not present.")
                     }
                 }
+            } catch (e: IOException) {
+                e.printStackTrace()
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
         }
     }
 
