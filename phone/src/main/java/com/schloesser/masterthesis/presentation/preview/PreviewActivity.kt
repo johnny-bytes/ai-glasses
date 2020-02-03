@@ -11,6 +11,7 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import com.schloesser.masterthesis.R
 import com.schloesser.masterthesis.infrastructure.ClassifierService
+import com.schloesser.shared.wifidirect.SharedConstants.Companion.TARGET_FPS
 import kotlinx.android.synthetic.main.activity_video.*
 
 
@@ -76,7 +77,7 @@ open class PreviewActivity : AppCompatActivity() {
                 }
             } finally {
                 if (!processingRunnableStopped)
-                    Handler().postDelayed(this, 500)
+                    Handler().postDelayed(this, TARGET_FPS.toLong())
             }
         }
     }

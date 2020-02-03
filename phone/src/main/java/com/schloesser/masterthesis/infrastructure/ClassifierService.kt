@@ -153,7 +153,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
                 }
             } finally {
                 if (isServerRunning)
-                    Handler(Looper.getMainLooper()).postDelayed(this, (1000 / SharedConstants.TARGET_FPS).toLong())
+                    Handler(Looper.getMainLooper()).post(this)
             }
         }
     }
@@ -195,6 +195,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
                     val file = lastFrame?.storeImage(this@ClassifierService)
                     UploadFrameJob.scheduleJob(this@ClassifierService, sessionId!!, file!!)
                     lastSentFrame = lastFrame
+                    lastFrame = null // Set null to avoid multiple processing
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
