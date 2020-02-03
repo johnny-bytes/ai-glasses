@@ -29,7 +29,7 @@ import java.io.IOException;
  */
 public class EmotionClassifier extends Classifier {
 
-    public static final double FACE_SIZE = 64f;
+    public static final double FACE_SIZE = 100f;
 
 
     /**

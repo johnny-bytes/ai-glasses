@@ -2,9 +2,10 @@ package com.schloesser.masterthesis.infrastructure
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import com.schloesser.masterthesis.infrastructure.base.Classifier
+import com.schloesser.masterthesis.infrastructure.implementations.EmotionClassifier
 import com.schloesser.masterthesis.infrastructure.implementations.EmotionClassifier.FACE_SIZE
-import com.schloesser.masterthesis.infrastructure.implementations.EmotionFER2013Classifier
 import com.schloesser.masterthesis.infrastructure.implementations.OpenCVCascadeFaceDetector
 import com.schloesser.masterthesis.infrastructure.implementations.OpenCVPreprocessing
 import com.schloesser.masterthesis.infrastructure.implementations.SimpleGazeDetector
@@ -22,8 +23,8 @@ class ProcessFrameTask(context: Context) {
     private val preprocessing = OpenCVPreprocessing()
     private val faceDetector = OpenCVCascadeFaceDetector(context)
     private val gazeDetector = SimpleGazeDetector()
-    //    private val emotionClassifier = EmotionClassifier(context, Classifier.Device.GPU, 1)
-    private val emotionClassifier = EmotionFER2013Classifier(context, Classifier.Device.GPU, 1)
+    private val emotionClassifier = EmotionClassifier(context, Classifier.Device.GPU, 1)
+//    private val emotionClassifier = EmotionFER2013Classifier(context, Classifier.Device.GPU, 1)
 
     private val faceBuffer: ByteBuffer by lazy {
         val buffer = ByteBuffer.allocateDirect((1 * FACE_SIZE * FACE_SIZE * 4).toInt())
@@ -51,8 +52,11 @@ class ProcessFrameTask(context: Context) {
                 fillFaceBuffer(processedFace)
 
                 val results = emotionClassifier.recognizeImage(faceBuffer, 0)
+
                 emotionLabel = results[0].title
                 labelConfidence = results[0].confidence
+            } else {
+                throw IllegalStateException("faceIndex is null")
             }
         } else {
             emotionLabel = ""

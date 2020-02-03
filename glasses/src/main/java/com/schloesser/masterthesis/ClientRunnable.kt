@@ -2,16 +2,23 @@ package com.schloesser.masterthesis
 
 import android.app.AlertDialog
 import android.content.Context
+import android.graphics.ImageFormat
+import android.graphics.Rect
+import android.graphics.YuvImage
 import android.os.Handler
 import android.system.ErrnoException
 import android.util.Log
 import android.view.WindowManager
 import android.widget.EditText
 import com.schloesser.shared.wifidirect.SharedConstants
+import com.schloesser.shared.wifidirect.SharedConstants.Companion.FRAME_HEIGHT
+import com.schloesser.shared.wifidirect.SharedConstants.Companion.FRAME_WIDTH
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
 import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
+import com.schloesser.shared.wifidirect.SharedConstants.Companion.TARGET_FPS
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.IOException
@@ -19,7 +26,7 @@ import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.SocketException
 
-class ClientSocketThread(
+class ClientRunnable(
     private val cameraPreview: CameraPreview,
     private val context: Context,
     private val handler: Handler,
@@ -111,21 +118,23 @@ class ClientSocketThread(
         try {
             while (shouldRun) {
 
-                if (cameraPreview.frameBuffer != null
-                    && cameraPreview.frameBuffer!!.size() > 0
-                ) {
+                val bufferSize = cameraPreview.frameBuffer?.size ?: 0
+
+                if (bufferSize > 0) {
+
+                    val frameBytes = getFrame()
 
                     outputStream?.writeUTF(HEADER_START)
-                    outputStream?.writeInt(cameraPreview.frameBuffer!!.size())
+                    outputStream?.writeInt(frameBytes.size)
                     outputStream?.writeUTF(HEADER_END)
                     outputStream?.flush()
 
-                    // Send image
-                    outputStream?.write(cameraPreview.frameBuffer!!.toByteArray())
+                    outputStream?.write(frameBytes)
                     outputStream?.flush()
-                }
 
-//                Thread.sleep((1000 / TARGET_FPS).toLong())
+                    Thread.sleep((1000 / TARGET_FPS).toLong())
+
+                }
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -148,6 +157,23 @@ class ClientSocketThread(
         }
     }
 
+    private fun getFrame(): ByteArray {
+
+        val yuvimage = YuvImage(
+            cameraPreview.frameBuffer, ImageFormat.NV21,
+            FRAME_WIDTH, FRAME_HEIGHT, null
+        )
+
+        val baos = ByteArrayOutputStream()
+        yuvimage.compressToJpeg(
+            Rect(0, 0, FRAME_WIDTH, FRAME_HEIGHT),
+            SharedConstants.IMAGE_QUALITY, baos
+        )
+
+        return baos.toByteArray()
+
+    }
+
     private val readInputRunnable = Runnable {
         try {
             while (shouldRun) {
@@ -167,7 +193,7 @@ class ClientSocketThread(
                 }
             }
         } catch (e: IOException) {
-                e.printStackTrace()
+            e.printStackTrace()
         }
     }
 

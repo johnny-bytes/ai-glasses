@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.*
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -31,14 +30,14 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
         const val NOTIFICATION_ID = 1
         const val NOTIFICATION_CHANNEL_ID = "ai-glasses-notifications"
         const val ACTION_STOP_SERVICE = "stop-service"
-        const val ACTION_SERVICE_STARTED = "service-started"
-        const val ACTION_SERVICE_STOPPED = "service-stopped"
+        const val STATUS_SERVICE_STARTED = "service-started"
+        const val STATUS_SERVICE_STOPPED = "service-stopped"
     }
 
     override fun onCreate() {
         super.onCreate()
         registerNotificationChannel()
-        LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTION_SERVICE_STARTED))
+        LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(STATUS_SERVICE_STARTED))
     }
 
     private var sessionId: Int? = -1
@@ -72,7 +71,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
         serverSocket?.close()
         socket?.close()
         socketThread?.interrupt()
-        LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(ACTION_SERVICE_STOPPED))
+        LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(STATUS_SERVICE_STOPPED))
     }
 
     private fun startServer(reconnecting: Boolean, error: Throwable? = null) {
@@ -151,11 +150,10 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
             try {
                 if (lastFrame != null) {
                     processFrameTask.run(lastFrame!!, this@ClassifierService)
-//                    lastFrame = null // Set null to avoid multiple processing
                 }
             } finally {
                 if (isServerRunning)
-                    Handler(Looper.getMainLooper()).post(this)
+                    Handler(Looper.getMainLooper()).postDelayed(this, (1000 / SharedConstants.TARGET_FPS).toLong())
             }
         }
     }

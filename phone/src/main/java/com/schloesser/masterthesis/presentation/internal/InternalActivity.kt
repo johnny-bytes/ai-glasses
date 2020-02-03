@@ -42,8 +42,8 @@ class InternalActivity : AppCompatActivity() {
         setContentView(R.layout.activity_internal)
 
         val filter = IntentFilter().apply {
-            addAction(ClassifierService.ACTION_SERVICE_STARTED)
-            addAction(ClassifierService.ACTION_SERVICE_STOPPED)
+            addAction(ClassifierService.STATUS_SERVICE_STARTED)
+            addAction(ClassifierService.STATUS_SERVICE_STOPPED)
             addAction(AccessTokenAuthenticator.BROADCAST_PERFORM_LOGOUT)
         }
 

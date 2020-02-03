@@ -16,7 +16,7 @@ import pub.devrel.easypermissions.EasyPermissions
 import java.util.*
 
 
-class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
+class MainActivity : ActionMenuActivity(), ClientRunnable.Callback {
 
     companion object {
         const val TAG = "MainActivity"
@@ -49,7 +49,7 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
     }
 
     private var cameraPreview: CameraPreview? = null
-    private var clientSocketThread: ClientSocketThread? = null
+    private var clientRunnable: ClientRunnable? = null
     private var thread: Thread? = null
 
     private fun startVideoStreaming() {
@@ -61,8 +61,8 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
             cameraPreview = CameraPreview(this, camera!!)
             previewContainer.addView(cameraPreview)
 
-            clientSocketThread = ClientSocketThread(cameraPreview!!, this, Handler(), this)
-            thread = Thread(clientSocketThread)
+            clientRunnable = ClientRunnable(cameraPreview!!, this, Handler(), this)
+            thread = Thread(clientRunnable)
             thread?.start()
 
         } else {
@@ -122,7 +122,7 @@ class MainActivity : ActionMenuActivity(), ClientSocketThread.Callback {
     override fun onStop() {
         super.onStop()
         thread?.interrupt()
-        clientSocketThread?.stop()
+        clientRunnable?.stop()
     }
 
     override fun onDestroy() {
