@@ -59,7 +59,7 @@ public class EmotionClassifier extends Classifier {
 
     @Override
     protected String getModelPath() {
-        return "emotion_classifier.tflite";
+        return "emotion_classifier_noprep.tflite";
     }
 
     @Override
