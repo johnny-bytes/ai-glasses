@@ -5,19 +5,16 @@ package com.schloesser.masterthesis
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.ImageFormat
-import android.graphics.Rect
-import android.graphics.YuvImage
 import android.hardware.Camera
 import android.view.SurfaceHolder
 import android.view.SurfaceView
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.FRAME_HEIGHT
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.FRAME_WIDTH
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.IMAGE_QUALITY
-import java.io.ByteArrayOutputStream
+import com.schloesser.shared.SharedConstants.Companion.FRAME_HEIGHT
+import com.schloesser.shared.SharedConstants.Companion.FRAME_WIDTH
 
 // Camera 1 API is recommended for use with Vuzix Blade: https://www.vuzix.com/Developer/KnowledgeBase/Detail/1085
 @SuppressLint("ViewConstructor")
-class CameraPreview(context: Context, private var camera: Camera) : SurfaceView(context), SurfaceHolder.Callback, Camera.PreviewCallback {
+class CameraPreview(context: Context, private var camera: Camera) : SurfaceView(context),
+    SurfaceHolder.Callback, Camera.PreviewCallback {
 
 
     init {
@@ -66,7 +63,8 @@ class CameraPreview(context: Context, private var camera: Camera) : SurfaceView(
         }
     }
 
-    @Volatile var frameBuffer: ByteArray? = null
+    @Volatile
+    var frameBuffer: ByteArray? = null
 
     override fun onPreviewFrame(data: ByteArray?, camera: Camera) {
         frameBuffer = data

@@ -21,7 +21,6 @@ import com.schloesser.masterthesis.presentation.preview.PreviewActivity
 import com.schloesser.masterthesis.presentation.selectSession.SelectSessionDialog
 import com.schloesser.masterthesis.presentation.settings.SettingsActivity
 import com.schloesser.masterthesis.presentation.uploadFrame.UploadFrameActivity
-import kotlinx.android.synthetic.main.activity_internal.*
 import org.opencv.android.InstallCallbackInterface
 import org.opencv.android.LoaderCallbackInterface
 import org.opencv.android.OpenCVLoader
@@ -63,16 +62,19 @@ class InternalActivity : AppCompatActivity() {
     }
 
     private fun initOpenCV() {
-        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_2_4_6, this, object : LoaderCallbackInterface {
-            override fun onManagerConnected(status: Int) {
-            }
+        OpenCVLoader.initAsync(
+            OpenCVLoader.OPENCV_VERSION_2_4_6,
+            this,
+            object : LoaderCallbackInterface {
+                override fun onManagerConnected(status: Int) {
+                }
 
-            override fun onPackageInstall(operation: Int, callback: InstallCallbackInterface?) {
-            }
-        })
+                override fun onPackageInstall(operation: Int, callback: InstallCallbackInterface?) {
+                }
+            })
 
         if (!OpenCVLoader.initDebug()) {
-            Toast.makeText(this, "openCv cannot be loaded", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "openCv cannot be loaded", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -86,7 +88,7 @@ class InternalActivity : AppCompatActivity() {
     }
 
     private fun stopService() {
-        stopService(Intent(this, ClassifierService::class.java));
+        stopService(Intent(this, ClassifierService::class.java))
     }
 
     private fun initLayout() {
@@ -107,7 +109,7 @@ class InternalActivity : AppCompatActivity() {
         }
 
         btnSettings.setOnClickListener {
-            startActivity(Intent(this, SettingsActivity   ::class.java))
+            startActivity(Intent(this, SettingsActivity::class.java))
             overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
         }
 

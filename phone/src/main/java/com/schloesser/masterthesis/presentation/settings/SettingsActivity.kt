@@ -9,7 +9,7 @@ import com.schloesser.masterthesis.R
 class SettingsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        overridePendingTransition(0,0)
+        overridePendingTransition(0, 0)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
         supportFragmentManager
@@ -23,7 +23,7 @@ class SettingsActivity : AppCompatActivity() {
         when (item.itemId) {
             android.R.id.home -> {
                 finish()
-                overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right);
+                overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
             }
         }
         return true
@@ -38,6 +38,6 @@ class SettingsActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right);
+        overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
     }
 }

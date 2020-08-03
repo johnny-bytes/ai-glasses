@@ -7,7 +7,7 @@ import org.opencv.core.Rect
 import org.opencv.core.Size
 import org.opencv.imgproc.Imgproc
 
-class OpenCVPreprocessing: Preprocessing  {
+class OpenCVPreprocessing : Preprocessing {
 
     override fun processFrame(image: Mat): Mat {
         val outputMat = Mat()

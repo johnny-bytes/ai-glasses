@@ -13,7 +13,10 @@ class SettingsRepository private constructor(context: Context) {
     }
 
     val sendFrameIntervalSeconds: Int
-        @Synchronized get() = sharedPreferences.getString("sendFrameIntervalSeconds", "15")!!.toInt()
+        @Synchronized get() = sharedPreferences.getString(
+            "sendFrameIntervalSeconds",
+            "15"
+        )!!.toInt()
 
     val offlineModeEnabled: Boolean
         @Synchronized get() = sharedPreferences.getBoolean("offlineModeEnabled", false)

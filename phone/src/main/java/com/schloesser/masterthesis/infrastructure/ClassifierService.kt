@@ -1,6 +1,8 @@
 package com.schloesser.masterthesis.infrastructure
 
-import android.app.*
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -44,12 +46,12 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
     private var sessionName: String? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action.equals(ACTION_STOP_SERVICE)) {
+        if (intent.action.equals(ACTION_STOP_SERVICE)) {
             stopSelf()
             NotificationManagerCompat.from(this).cancel(NOTIFICATION_ID)
         } else {
-            sessionId = intent?.getIntExtra("sessionId", -1)
-            sessionName = intent?.getStringExtra("sessionName")
+            sessionId = intent.getIntExtra("sessionId", -1)
+            sessionName = intent.getStringExtra("sessionName")
 
             startForeground(NOTIFICATION_ID, getDefaultNotification())
             startServer(false)
@@ -68,9 +70,9 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
     override fun onDestroy() {
         super.onDestroy()
         stopServer()
-        serverSocket?.close()
-        socket?.close()
-        socketThread?.interrupt()
+        serverSocket.close()
+        socket.close()
+        socketThread.interrupt()
         LocalBroadcastManager.getInstance(this).sendBroadcast(Intent(STATUS_SERVICE_STOPPED))
     }
 
@@ -101,12 +103,12 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
 
                 if (serverSocket == null) {
                     serverSocket = ServerSocket()
-                    serverSocket?.reuseAddress = true
-                    serverSocket?.bind(InetSocketAddress(SharedConstants.SERVERPORT))
+                    serverSocket.reuseAddress = true
+                    serverSocket.bind(InetSocketAddress(SharedConstants.SERVERPORT))
                 }
 
                 socket = serverSocket!!.accept()
-                socket?.keepAlive = true
+                socket.keepAlive = true
 
                 try {
                     outputStream = DataOutputStream(socket!!.getOutputStream())
@@ -158,14 +160,24 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
         }
     }
 
-    override fun onProcessFrameResults(faceCount: Int, emotionLabel: String, labelConfidence: Float, frame: Bitmap, processedCenterFace: Bitmap?) {
+    override fun onProcessFrameResults(
+        faceCount: Int,
+        emotionLabel: String,
+        labelConfidence: Float,
+        frame: Bitmap,
+        processedCenterFace: Bitmap?
+    ) {
         sendProcessingResults(faceCount, emotionLabel, labelConfidence)
         lastFrameProcessed = frame
         lastFace = processedCenterFace
         updateNotification("Connected to " + socket!!.inetAddress.toString().removePrefix("/"))
     }
 
-    private fun sendProcessingResults(faceCount: Int, emotionLabel: String, labelConfidence: Float) {
+    private fun sendProcessingResults(
+        faceCount: Int,
+        emotionLabel: String,
+        labelConfidence: Float
+    ) {
         doAsync {
             try {
                 outputStream!!.writeUTF(SharedConstants.HEADER_START)
@@ -188,7 +200,7 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
 
     private val uploadFrameRunnable = object : Runnable {
         override fun run() {
-            if(SettingsRepository.getInstance(this@ClassifierService).offlineModeEnabled) return
+            if (SettingsRepository.getInstance(this@ClassifierService).offlineModeEnabled) return
 
             try {
                 if (lastFrame != null && lastFrame != lastSentFrame) {
@@ -201,7 +213,10 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
                 e.printStackTrace()
             } finally {
                 if (isServerRunning)
-                    Handler(Looper.getMainLooper()).postDelayed(this, SettingsRepository.getInstance(this@ClassifierService).sendFrameIntervalSeconds * 1000L)
+                    Handler(Looper.getMainLooper()).postDelayed(
+                        this,
+                        SettingsRepository.getInstance(this@ClassifierService).sendFrameIntervalSeconds * 1000L
+                    )
             }
         }
     }
@@ -230,7 +245,8 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
         val stopActionPending = Intent(this, ClassifierService::class.java).also {
             it.action = ACTION_STOP_SERVICE
         }
-        val stopActionPendingIntent = PendingIntent.getService(this, 0, stopActionPending, PendingIntent.FLAG_CANCEL_CURRENT)
+        val stopActionPendingIntent =
+            PendingIntent.getService(this, 0, stopActionPending, PendingIntent.FLAG_CANCEL_CURRENT)
 
         notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Vuzix Blade Service")
@@ -248,7 +264,8 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
                 .setContentText(message)
                 .setStyle(getNotificationText(message))
 
-            NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, notificationBuilder.build())
+            NotificationManagerCompat.from(this)
+                .notify(NOTIFICATION_ID, notificationBuilder.build())
         }
     }
 
@@ -263,7 +280,12 @@ class ClassifierService : Service(), ProcessFrameTask.Callback {
 
         val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(duration, VibrationEffect.DEFAULT_AMPLITUDE))
+            vibrator.vibrate(
+                VibrationEffect.createOneShot(
+                    duration,
+                    VibrationEffect.DEFAULT_AMPLITUDE
+                )
+            )
         } else {
             @Suppress("DEPRECATION")
             vibrator.vibrate(duration)

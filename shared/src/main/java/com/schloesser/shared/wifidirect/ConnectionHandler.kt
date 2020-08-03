@@ -32,7 +32,6 @@ class ConnectionHandler private constructor(private val context: Context) : Broa
     }
 
     var clientCallback: ClientCallback? = null
-    var hostCallback: HostCallback? = null
 
     private val intentFilter by lazy {
         val intentFilter = IntentFilter()
@@ -89,7 +88,7 @@ class ConnectionHandler private constructor(private val context: Context) : Broa
     private val devices = mutableListOf<WifiP2pDevice>()
 
     fun discoverServices() {
-        val txtListener = WifiP2pManager.DnsSdTxtRecordListener { fullDomain, record, device ->
+        val txtListener = WifiP2pManager.DnsSdTxtRecordListener { _, record, device ->
 
             Log.d(TAG, "DnsSdTxtRecord available -$record")
             Log.d(TAG, "Device available -$device")
@@ -100,7 +99,7 @@ class ConnectionHandler private constructor(private val context: Context) : Broa
         }
 
         val serviceListener =
-            WifiP2pManager.DnsSdServiceResponseListener { instanceName, registrationType, device ->
+            WifiP2pManager.DnsSdServiceResponseListener { instanceName, _, device ->
 
                 Log.d(TAG, "onDnsSdServiceAvailable $instanceName")
                 Log.d(TAG, "onDnsSdServiceAvailable $device")
@@ -118,7 +117,11 @@ class ConnectionHandler private constructor(private val context: Context) : Broa
         manager.clearServiceRequests(channel, object : WifiP2pManager.ActionListener {
 
             override fun onSuccess() {
-                manager.addServiceRequest(channel, WifiP2pDnsSdServiceRequest.newInstance(), actionListener)
+                manager.addServiceRequest(
+                    channel,
+                    WifiP2pDnsSdServiceRequest.newInstance(),
+                    actionListener
+                )
                 manager.discoverServices(channel, actionListener)
                 manager.discoverPeers(channel, actionListener)
             }
@@ -177,9 +180,5 @@ class ConnectionHandler private constructor(private val context: Context) : Broa
 
     interface ClientCallback {
         fun onAvailableServicesChanged(services: List<WifiP2pDevice>)
-    }
-
-    interface HostCallback {
-
     }
 }

@@ -18,7 +18,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 class ApiFactory private constructor(private val context: Context) {
 
     companion object : SingletonHolder<ApiFactory, Context>(::ApiFactory) {
-//        const val BASE_URL = "http://192.168.178.41:5005/"
+        //        const val BASE_URL = "http://192.168.178.41:5005/"
         const val BASE_URL = "https://ai-glass-api.happimeter.org/"
     }
 

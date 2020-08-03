@@ -8,14 +8,13 @@ import android.graphics.YuvImage
 import android.os.Handler
 import android.system.ErrnoException
 import android.util.Log
-import android.view.WindowManager
 import android.widget.EditText
-import com.schloesser.shared.wifidirect.SharedConstants
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.FRAME_HEIGHT
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.FRAME_WIDTH
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.TARGET_FPS
+import com.schloesser.shared.SharedConstants.Companion.FRAME_HEIGHT
+import com.schloesser.shared.SharedConstants.Companion.FRAME_WIDTH
+import com.schloesser.shared.SharedConstants.Companion.HEADER_END
+import com.schloesser.shared.SharedConstants.Companion.HEADER_START
+import com.schloesser.shared.SharedConstants.Companion.TARGET_FPS
+import com.schloesser.shared.SharedConstants
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
@@ -51,23 +50,23 @@ class ClientRunnable(
     fun stop() {
         shouldRun = false
         cameraPreview.frameBuffer = null
-        socket?.close()
+        socket.close()
     }
 
     private fun connectToServer() {
         GlobalScope.launch {
             try {
                 socket = Socket()
-                socket?.connect(
+                socket.connect(
                     InetSocketAddress(
                         settingsRepository.getServerAddress(),
                         SharedConstants.SERVERPORT
                     ), 3000
                 )
-                socket?.keepAlive = true
+                socket.keepAlive = true
 
-                outputStream = DataOutputStream(socket?.getOutputStream())
-                inputStream = DataInputStream(socket?.getInputStream())
+                outputStream = DataOutputStream(socket.getOutputStream())
+                inputStream = DataInputStream(socket.getInputStream())
 
                 shouldRun = true
 
@@ -126,13 +125,13 @@ class ClientRunnable(
 
                     val frameBytes = getFrame()
 
-                    outputStream?.writeUTF(HEADER_START)
-                    outputStream?.writeInt(frameBytes.size)
-                    outputStream?.writeUTF(HEADER_END)
-                    outputStream?.flush()
+                    outputStream.writeUTF(HEADER_START)
+                    outputStream.writeInt(frameBytes.size)
+                    outputStream.writeUTF(HEADER_END)
+                    outputStream.flush()
 
-                    outputStream?.write(frameBytes)
-                    outputStream?.flush()
+                    outputStream.write(frameBytes)
+                    outputStream.flush()
 
                     Thread.sleep((1000 / TARGET_FPS).toLong())
 
@@ -142,13 +141,13 @@ class ClientRunnable(
             e.printStackTrace()
 
             try {
-                outputStream?.close()
+                outputStream.close()
             } catch (e2: Exception) {
                 e.printStackTrace()
             }
 
             try {
-                inputStream?.close()
+                inputStream.close()
             } catch (e2: Exception) {
                 e.printStackTrace()
             }

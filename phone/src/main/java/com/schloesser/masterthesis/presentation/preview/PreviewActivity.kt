@@ -11,14 +11,13 @@ import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import com.schloesser.masterthesis.R
 import com.schloesser.masterthesis.infrastructure.ClassifierService
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.TARGET_FPS
-import kotlinx.android.synthetic.main.activity_video.*
+import com.schloesser.shared.SharedConstants.Companion.TARGET_FPS
 
 
 open class PreviewActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        overridePendingTransition(0,0)
+        overridePendingTransition(0, 0)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_video)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -29,7 +28,7 @@ open class PreviewActivity : AppCompatActivity() {
         when (item.itemId) {
             android.R.id.home -> {
                 finish()
-                overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right);
+                overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
             }
         }
         return true
@@ -84,6 +83,6 @@ open class PreviewActivity : AppCompatActivity() {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right);
+        overridePendingTransition(R.anim.slide_from_left, R.anim.slide_to_right)
     }
 }

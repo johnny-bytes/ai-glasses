@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.itkacher.okhttpprofiler.OkHttpProfilerInterceptor
 import com.schloesser.masterthesis.data.repository.SessionRepository
-import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
@@ -103,8 +102,8 @@ class AccessTokenAuthenticator(private val context: Context) : Authenticator {
 
         val response = okHttpClient.newCall(request).execute()
 
-        if(response.isSuccessful) {
-            val jsonResponse = JSONObject(response.body?.string() ?: "{}")
+        if (response.isSuccessful) {
+            val jsonResponse = JSONObject(response.body.string() ?: "{}")
 
             if (jsonResponse.has("access")) {
                 return jsonResponse.getString("access")

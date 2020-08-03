@@ -2,7 +2,6 @@ package com.schloesser.masterthesis
 
 import android.content.Context
 import android.content.SharedPreferences
-import org.jetbrains.anko.defaultSharedPreferences
 
 class SettingsRepository(context: Context) {
 
@@ -15,8 +14,9 @@ class SettingsRepository(context: Context) {
 
 
     fun getServerAddress(): String {
-        if(serverAddressCache == null) {
-            serverAddressCache = preferences.getString("server_address", DEFAULT_SERVER_ADDRESS) ?: DEFAULT_SERVER_ADDRESS
+        if (serverAddressCache == null) {
+            serverAddressCache = preferences.getString("server_address", DEFAULT_SERVER_ADDRESS)
+                ?: DEFAULT_SERVER_ADDRESS
         }
         return serverAddressCache ?: DEFAULT_SERVER_ADDRESS
     }

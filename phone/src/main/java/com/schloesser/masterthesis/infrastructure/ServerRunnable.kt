@@ -5,8 +5,8 @@ import android.graphics.BitmapFactory
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_END
-import com.schloesser.shared.wifidirect.SharedConstants.Companion.HEADER_START
+import com.schloesser.shared.SharedConstants.Companion.HEADER_END
+import com.schloesser.shared.SharedConstants.Companion.HEADER_START
 import org.jetbrains.anko.doAsync
 import java.io.DataInputStream
 import java.io.IOException
@@ -23,7 +23,7 @@ constructor(
 
     companion object {
         private const val TAG = "ServerSocketThread"
-        private const val READ_TIMEOUT = 3000;
+        private const val READ_TIMEOUT = 3000
     }
 
     private var shouldRun = true

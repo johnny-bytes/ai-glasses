@@ -1,7 +1,6 @@
 package com.schloesser.masterthesis.data.repository
 
 import android.content.Context
-import androidx.preference.PreferenceManager
 import com.schloesser.masterthesis.data.base.SingletonHolder
 
 class SessionRepository private constructor(context: Context) {

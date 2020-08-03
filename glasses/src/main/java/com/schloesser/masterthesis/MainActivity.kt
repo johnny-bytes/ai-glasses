@@ -11,7 +11,6 @@ import android.os.PowerManager
 import android.view.WindowManager
 import android.widget.Toast
 import com.vuzix.hud.actionmenu.ActionMenuActivity
-import kotlinx.android.synthetic.main.activity_main.*
 import pub.devrel.easypermissions.EasyPermissions
 import java.util.*
 
@@ -63,7 +62,7 @@ class MainActivity : ActionMenuActivity(), ClientRunnable.Callback {
 
             clientRunnable = ClientRunnable(cameraPreview!!, this, Handler(), this)
             thread = Thread(clientRunnable)
-            thread?.start()
+            thread.start()
 
         } else {
             EasyPermissions.requestPermissions(
@@ -121,7 +120,7 @@ class MainActivity : ActionMenuActivity(), ClientRunnable.Callback {
 
     override fun onStop() {
         super.onStop()
-        thread?.interrupt()
+        thread.interrupt()
         clientRunnable?.stop()
     }
 

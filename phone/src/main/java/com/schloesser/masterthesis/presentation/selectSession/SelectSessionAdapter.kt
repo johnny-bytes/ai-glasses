@@ -7,9 +7,11 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.schloesser.masterthesis.R
 import com.schloesser.masterthesis.entity.ClassSession
-import kotlinx.android.synthetic.main.item_session.view.*
 
-open class SelectSessionAdapter(context: Context, private var callback: (session: ClassSession) -> Unit) : RecyclerView.Adapter<SelectSessionAdapter.ViewHolder>() {
+open class SelectSessionAdapter(
+    context: Context,
+    private var callback: (session: ClassSession) -> Unit
+) : RecyclerView.Adapter<SelectSessionAdapter.ViewHolder>() {
 
     private var data = ArrayList<ClassSession>()
 

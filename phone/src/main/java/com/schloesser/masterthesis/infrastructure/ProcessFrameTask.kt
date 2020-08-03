@@ -2,7 +2,6 @@ package com.schloesser.masterthesis.infrastructure
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.util.Log
 import com.schloesser.masterthesis.infrastructure.base.Classifier
 import com.schloesser.masterthesis.infrastructure.implementations.EmotionClassifier
 import com.schloesser.masterthesis.infrastructure.implementations.EmotionClassifier.FACE_SIZE

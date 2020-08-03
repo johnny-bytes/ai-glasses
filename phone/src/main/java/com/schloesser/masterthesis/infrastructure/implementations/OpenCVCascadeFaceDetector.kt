@@ -14,7 +14,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-class OpenCVCascadeFaceDetector(context: Context): FaceDetector {
+class OpenCVCascadeFaceDetector(context: Context) : FaceDetector {
 
     companion object {
         const val TAG = "OpenCVCascadeFaceDetector"
@@ -57,7 +57,15 @@ class OpenCVCascadeFaceDetector(context: Context): FaceDetector {
 
     override fun detectFaces(image: Mat): Array<Rect> {
         val faces = MatOfRect()
-        javaFaceDetector.detectMultiScale(image, faces, 1.05, 4, 0, Size(FACE_SIZE, FACE_SIZE), Size())
+        javaFaceDetector.detectMultiScale(
+            image,
+            faces,
+            1.05,
+            4,
+            0,
+            Size(FACE_SIZE, FACE_SIZE),
+            Size()
+        )
         return faces.toArray()
     }
 
